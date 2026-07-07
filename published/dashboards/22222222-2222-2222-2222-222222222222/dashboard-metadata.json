@@ -1,0 +1,24 @@
+{
+  "dashboardId": "22222222-2222-2222-2222-222222222222",
+  "title": "Dashboard Demo",
+  "businessArea": "Demo",
+  "ownerSubject": "mock-admin",
+  "currentVersionId": "25516fd3-5c8e-4453-8922-ba10f2da2ff8",
+  "currentVersionLabel": "1.0.1",
+  "publishedAt": "2026-07-04T19:08:48.696023Z",
+  "publishedBy": "mock-admin",
+  "manifest": {
+    "name": "Dashboard Demo",
+    "version": "1.0.1",
+    "entrypoint": "index.html",
+    "description": "Dashboard estatico de exemplo para validar upload ZIP version 1.0.1.",
+    "requiresApi": true,
+    "editableStateKeys": [
+      "metas",
+      "comentarios"
+    ],
+    "allowedDataSources": [
+      "sample_csv"
+    ]
+  }
+}
