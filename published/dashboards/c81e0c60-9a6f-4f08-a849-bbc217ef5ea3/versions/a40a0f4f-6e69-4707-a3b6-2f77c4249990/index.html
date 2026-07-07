@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Demo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Dashboard Demo</h1>
+      <p>Exemplo estatico para upload seguro no Dashboard Manager.</p>
+    </header>
+
+    <section class="panel">
+      <h2>Metas comerciais</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Meta</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>Datos editables via SDK</h2>
+      <p class="muted">Use este bloco dentro do portal para ler e salvar o stateKey <strong>metas</strong>.</p>
+
+      <div class="lookup">
+        <label>
+          Buscar producto
+          <input id="productoSearch" value="P001">
+        </label>
+        <button id="searchProduct" type="button">Buscar producto</button>
+      </div>
+
+      <table class="compact">
+        <thead>
+          <tr>
+            <th>Codigo</th>
+            <th>Descripcion</th>
+            <th>Categoria</th>
+            <th>Marca</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="productResults">
+          <tr>
+            <td colspan="5">Sin resultados</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid">
+        <label>
+          Produto
+          <input id="producto" value="ABC123">
+        </label>
+        <label>
+          Meta %
+          <input id="metaPorcentaje" type="number" min="0" max="100" value="15">
+        </label>
+        <label>
+          Estado
+          <input id="estado" value="Ajustado">
+        </label>
+      </div>
+
+      <label>
+        Comentario
+        <textarea id="comentarioGerente" rows="3">Meta posible para la zona norte</textarea>
+      </label>
+
+      <div class="actions">
+        <button id="loadState" type="button">Cargar metas</button>
+        <button id="saveState" type="button">Guardar meta demo</button>
+      </div>
+
+      <p id="status" class="status">SDK aguardando accion.</p>
+      <pre id="stateOutput">{}</pre>
+    </section>
+  </main>
+
+  <script src="/dashboard-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
