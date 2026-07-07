@@ -1,0 +1,14 @@
+{
+  "name": "Dashboard Demo",
+  "description": "Dashboard estatico de exemplo para validar SDK e datos editables.",
+  "entrypoint": "index.html",
+  "version": "1.0.2",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "productos_catalogo"
+  ],
+  "editableStateKeys": [
+    "metas",
+    "comentarios"
+  ]
+}
