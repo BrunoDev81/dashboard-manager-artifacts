@@ -1,0 +1,24 @@
+{
+  "dashboardId": "c81e0c60-9a6f-4f08-a849-bbc217ef5ea3",
+  "title": "Dashboard Smoke Test 20260707192354",
+  "businessArea": "Smoke Test",
+  "ownerSubject": "3f6fb569-63d2-44d1-bc21-95e68d4e088b",
+  "currentVersionId": "a40a0f4f-6e69-4707-a3b6-2f77c4249990",
+  "currentVersionLabel": "1.0.2",
+  "publishedAt": "2026-07-07T19:23:54.578712Z",
+  "publishedBy": "3f6fb569-63d2-44d1-bc21-95e68d4e088b",
+  "manifest": {
+    "name": "Dashboard Demo",
+    "version": "1.0.2",
+    "entrypoint": "index.html",
+    "description": "Dashboard estatico de exemplo para validar SDK e datos editables.",
+    "requiresApi": true,
+    "editableStateKeys": [
+      "metas",
+      "comentarios"
+    ],
+    "allowedDataSources": [
+      "productos_catalogo"
+    ]
+  }
+}
