@@ -1,0 +1,4 @@
+codigo,descripcion,categoria,marca,familia,status
+P001,Producto Demo 1,Categoria A,Marca Demo,Familia 1,ACTIVO
+P002,Producto Demo 2,Categoria B,Marca Demo,Familia 2,ACTIVO
+P003,Producto Demo 3,Categoria C,Marca Demo,Familia 3,INACTIVO
