@@ -1,0 +1,14 @@
+{
+  "name": "Dashboard Demo",
+  "description": "Dashboard estatico de exemplo para validar upload ZIP version 1.0.1.",
+  "entrypoint": "index.html",
+  "version": "1.0.1",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "sample_csv"
+  ],
+  "editableStateKeys": [
+    "metas",
+    "comentarios"
+  ]
+}
