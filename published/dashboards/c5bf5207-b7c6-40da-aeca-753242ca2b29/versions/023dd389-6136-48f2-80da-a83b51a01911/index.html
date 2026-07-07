@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Prueba Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Dashboard Manager · Prueba SDK</p>
+        <h1>Simulador de Metas por Producto</h1>
+        <p class="subtitle">
+          Probá datos editables, catálogo de productos y guardado colaborativo desde un dashboard publicado.
+        </p>
+      </div>
+      <div class="status-card">
+        <span class="status-dot"></span>
+        <div>
+          <strong id="sdkStatus">SDK pendiente</strong>
+          <small id="userInfo">Esperando plataforma</small>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid metrics">
+      <article class="metric good">
+        <span>Meta actual</span>
+        <strong id="metricMeta">--%</strong>
+        <small>Valor editable</small>
+      </article>
+      <article class="metric base">
+        <span>Producto</span>
+        <strong id="metricProducto">---</strong>
+        <small id="metricDescripcion">Sin selección</small>
+      </article>
+      <article class="metric warning">
+        <span>Estado</span>
+        <strong id="metricEstado">Pendiente</strong>
+        <small>Simulación comercial</small>
+      </article>
+      <article class="metric critical">
+        <span>Versión state</span>
+        <strong id="metricVersion">0</strong>
+        <small>Control optimista</small>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Buscar producto</h2>
+            <p>Consulta el dataset auxiliar <code>productos_catalogo</code>.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <input id="searchInput" placeholder="Ej.: P001, demo, categoria..." />
+          <button id="btnSearch" class="button secondary">Buscar</button>
+        </div>
+
+        <div id="datasetResults" class="results empty">
+          Sin resultados todavía.
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Datos editables</h2>
+            <p>Estos valores se guardan en PostgreSQL vía Dashboard Manager.</p>
+          </div>
+          <button id="btnLoadState" class="button ghost">Cargar metas</button>
+        </div>
+
+        <form id="stateForm" class="form">
+          <label>
+            Código producto
+            <input id="producto" placeholder="P001" />
+          </label>
+
+          <label>
+            Descripción
+            <input id="descripcion" placeholder="Producto Demo 1" />
+          </label>
+
+          <label>
+            Meta %
+            <input id="metaPorcentaje" type="number" min="0" max="100" step="0.1" placeholder="15" />
+          </label>
+
+          <label>
+            Estado
+            <select id="estado">
+              <option value="Borrador">Borrador</option>
+              <option value="En revisión">En revisión</option>
+              <option value="Revisado">Revisado</option>
+              <option value="Aprobado">Aprobado</option>
+            </select>
+          </label>
+
+          <label class="full">
+            Comentario
+            <textarea id="comentario" rows="4" placeholder="Comentario comercial o ajuste sugerido..."></textarea>
+          </label>
+
+          <label class="full">
+            Motivo del cambio
+            <input id="changeReason" placeholder="Ej.: Ajuste desde dashboard publicado" />
+          </label>
+
+          <div class="actions full">
+            <button type="button" id="btnHistory" class="button ghost">Ver historial</button>
+            <button type="submit" class="button primary">Guardar cambios</button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Payload actual</h2>
+          <p>Vista técnica para validar lectura/escritura del state <code>metas</code>.</p>
+        </div>
+      </div>
+      <pre id="payloadView">{}</pre>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Historial</h2>
+          <p>Últimos cambios devueltos por la plataforma.</p>
+        </div>
+      </div>
+      <div id="historyView" class="history empty">Todavía no cargaste el historial.</div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/dashboard-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
