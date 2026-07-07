@@ -1,0 +1,25 @@
+{
+  "dashboardId": "c5bf5207-b7c6-40da-aeca-753242ca2b29",
+  "title": "Teste",
+  "businessArea": "IT",
+  "ownerSubject": "mock-admin",
+  "currentVersionId": "023dd389-6136-48f2-80da-a83b51a01911",
+  "currentVersionLabel": "1.0.1",
+  "publishedAt": "2026-07-07T10:17:13.2649Z",
+  "publishedBy": "673547ee-d339-4ac2-b4b9-f45c1069f9ea",
+  "manifest": {
+    "name": "Dashboard Prueba Manager",
+    "version": "1.0.1",
+    "entrypoint": "index.html",
+    "description": "Dashboard de prueba para validar SDK, datos editables y datasets auxiliares. Versi\u00F3n 1.0.1.",
+    "requiresApi": true,
+    "editableStateKeys": [
+      "metas",
+      "comentarios",
+      "simulaciones"
+    ],
+    "allowedDataSources": [
+      "productos_catalogo"
+    ]
+  }
+}
