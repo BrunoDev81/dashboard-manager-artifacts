@@ -1,0 +1,15 @@
+{
+  "name": "Dashboard Prueba Manager",
+  "description": "Dashboard de prueba para validar SDK, datos editables y datasets auxiliares. Versión 1.0.1.",
+  "entrypoint": "index.html",
+  "version": "1.0.1",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "productos_catalogo"
+  ],
+  "editableStateKeys": [
+    "metas",
+    "comentarios",
+    "simulaciones"
+  ]
+}
