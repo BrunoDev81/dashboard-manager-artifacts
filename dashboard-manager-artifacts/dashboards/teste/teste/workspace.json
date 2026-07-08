@@ -1,0 +1,24 @@
+{
+  "dashboardId": "ca5cfb3d-0671-413e-ade0-40a193dc432e",
+  "dashboardTitle": "Teste",
+  "businessArea": "Calidad",
+  "templateKey": "executive-cockpit",
+  "createdBy": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "createdAt": "2026-07-08T11:11:06.4892162Z",
+  "allowedDataSources": [
+    "ventas_mensuales",
+    "finanzas_mensuales",
+    "gastos_mensuales",
+    "operaciones_diarias"
+  ],
+  "editableStateKeys": [
+    "comentarios_ejecutivos",
+    "decisiones",
+    "acciones_prioritarias",
+    "riesgos"
+  ],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
