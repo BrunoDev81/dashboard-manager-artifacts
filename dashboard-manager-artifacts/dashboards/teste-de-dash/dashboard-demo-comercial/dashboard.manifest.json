@@ -1,0 +1,25 @@
+{
+  "name": "Executive Cockpit",
+  "description": "Dashboard ejecutivo de alto nivel para seguimiento integral del negocio, alertas, decisiones y acciones prioritarias.",
+  "entrypoint": "index.html",
+  "version": "1.0.0",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "ventas_mensuales",
+    "finanzas_mensuales",
+    "gastos_mensuales",
+    "operaciones_diarias"
+  ],
+  "editableStateKeys": [
+    "comentarios_ejecutivos",
+    "decisiones",
+    "acciones_prioritarias",
+    "riesgos"
+  ],
+  "source": {
+    "type": "GITHUB_WORKSPACE",
+    "repository": "BrunoDev81/dashboard-manager-artifacts",
+    "branch": "main",
+    "path": "dashboard-manager-artifacts/dashboards/teste-de-dash/dashboard-demo-comercial"
+  }
+}

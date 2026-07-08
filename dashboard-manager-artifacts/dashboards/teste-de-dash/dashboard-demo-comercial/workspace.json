@@ -1,0 +1,24 @@
+{
+  "dashboardId": "22222222-2222-2222-2222-222222222222",
+  "dashboardTitle": "Dashboard Demo Comercial",
+  "businessArea": "Comercial",
+  "templateKey": "executive-cockpit",
+  "createdBy": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "createdAt": "2026-07-08T14:17:02.3504469Z",
+  "allowedDataSources": [
+    "ventas_mensuales",
+    "finanzas_mensuales",
+    "gastos_mensuales",
+    "operaciones_diarias"
+  ],
+  "editableStateKeys": [
+    "comentarios_ejecutivos",
+    "decisiones",
+    "acciones_prioritarias",
+    "riesgos"
+  ],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
