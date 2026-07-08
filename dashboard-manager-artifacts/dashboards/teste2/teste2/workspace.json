@@ -1,0 +1,24 @@
+{
+  "dashboardId": "d0279daf-a97a-4d97-9a45-5d7f61dec1b2",
+  "dashboardTitle": "Teste2",
+  "businessArea": "RRHH",
+  "templateKey": "executive-cockpit",
+  "createdBy": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "createdAt": "2026-07-08T11:20:10.4507412Z",
+  "allowedDataSources": [
+    "ventas_mensuales",
+    "finanzas_mensuales",
+    "gastos_mensuales",
+    "operaciones_diarias"
+  ],
+  "editableStateKeys": [
+    "comentarios_ejecutivos",
+    "decisiones",
+    "acciones_prioritarias",
+    "riesgos"
+  ],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
