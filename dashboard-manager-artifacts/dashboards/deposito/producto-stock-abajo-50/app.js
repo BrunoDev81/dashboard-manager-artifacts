@@ -276,7 +276,7 @@ async function loadDashboard() {
 
     state.products = rows
       .map(normalizeProduct)
-      .filter((product) => product.depositStock < STOCK_LIMIT);
+      .filter((product) => product.depositStock <= STOCK_LIMIT);
 
     setSelectOptions(elements.brand, uniqueSorted("brand"));
     setSelectOptions(elements.group, uniqueSorted("group"));
@@ -289,8 +289,8 @@ async function loadDashboard() {
     if (!state.products.length) {
       setFeedback(
         "empty",
-        "No hay productos con stock menor a 50",
-        "El dataset respondió correctamente, pero no contiene registros dentro del criterio."
+        "No hay productos con stock de hasta 50",
+        "El dataset respondió correctamente, pero no contiene registros dentro del criterio de hasta 50 unidades."
       );
       return;
     }
