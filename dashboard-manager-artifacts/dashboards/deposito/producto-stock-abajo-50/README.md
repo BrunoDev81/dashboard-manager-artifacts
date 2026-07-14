@@ -22,7 +22,7 @@ Se incluyen únicamente registros cuyo `und_stock_deposito` sea menor o igual a 
 - Bajo: entre 11 y 25.
 - Atención: entre 26 y 50.
 
-La interfaz presenta cuatro KPIs con estado, un ranking horizontal y una tabla analítica, dentro de los widgets corporativos aprobados.
+La interfaz presenta cuatro KPIs con estado, widgets corporativos aprobados, un ranking horizontal, lectura de riesgo y una tabla analítica como último bloque.
 
 ## Campos utilizados
 
@@ -46,8 +46,8 @@ El contrato también autoriza volumen material, división y volúmenes de stock.
 
 - **Participación donut** (1): participación de productos por `grupo`. Usa conteos de productos dentro del filtro activo.
 - **Indicadores de objetivo** (2): “Cobertura con stock” (productos positivos sobre el total filtrado) y “Productos sin stock” (objetivo cero).
-- **Columnas diarias con pista** (1): snapshot “Hoy”, con cantidad de productos hasta 50 y porcentaje de disponibilidad positiva.
-- No hay histórico diario ni metas de negocio en `dim_producto`; por eso el widget diario usa el snapshot actual y los indicadores usan metas derivadas del conjunto visible.
+- Se descartó **Columnas diarias con pista** porque `dim_producto` no contiene un campo histórico diario autorizado; así evitamos presentar un snapshot como si fuera una serie temporal.
+- Los indicadores usan metas derivadas del conjunto visible y mantienen estados loading, vacío y error sin inventar datos.
 
 ## Validación
 
