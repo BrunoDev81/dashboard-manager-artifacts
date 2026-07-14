@@ -330,6 +330,27 @@ function clearFilters() {
   applyFilters();
 }
 
+async function loadDatasetRows() {
+  const pageSize = 5000;
+  const firstPage = await window.DashboardManager.getDataset(DATASET_NAME, {
+    page: 1,
+    pageSize
+  });
+  const rows = extractRows(firstPage);
+  const total = Number(firstPage?.total || firstPage?.totalCount || 0);
+  const pages = total > rows.length ? Math.ceil(total / pageSize) : 1;
+
+  for (let page = 2; page <= pages; page += 1) {
+    const nextPage = await window.DashboardManager.getDataset(DATASET_NAME, {
+      page,
+      pageSize
+    });
+    rows.push(...extractRows(nextPage));
+  }
+
+  return rows;
+}
+
 async function loadDashboard() {
   if (!window.DashboardManager || typeof window.DashboardManager.getDataset !== "function") {
     setFeedback(
@@ -342,8 +363,7 @@ async function loadDashboard() {
   }
 
   try {
-    const payload = await window.DashboardManager.getDataset(DATASET_NAME, { limit: 5000, offset: 0 });
-    const rows = extractRows(payload);
+    const rows = await loadDatasetRows();
 
     state.products = rows
       .map(normalizeProduct)
