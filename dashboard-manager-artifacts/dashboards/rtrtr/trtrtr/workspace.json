@@ -1,0 +1,22 @@
+{
+  "dashboardId": "fb2e3d5b-5db3-4e46-9b71-ec568197a4e2",
+  "dashboardTitle": "trtrtr",
+  "businessArea": "rtrtr",
+  "templateKey": "quality-control",
+  "createdBy": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "createdAt": "2026-07-14T14:00:45.8460473Z",
+  "allowedDataSources": [
+    "calidad_lotes",
+    "productos_catalogo"
+  ],
+  "editableStateKeys": [
+    "observaciones",
+    "acciones_calidad",
+    "revisiones"
+  ],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}

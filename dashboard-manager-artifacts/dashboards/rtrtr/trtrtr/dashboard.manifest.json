@@ -1,0 +1,23 @@
+{
+  "name": "Control de Calidad",
+  "description": "Dashboard para seguimiento de inspecciones, lotes, rechazos y no conformidades.",
+  "entrypoint": "index.html",
+  "version": "1.0.0",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "calidad_lotes",
+    "productos_catalogo"
+  ],
+  "editableStateKeys": [
+    "observaciones",
+    "acciones_calidad",
+    "revisiones"
+  ],
+  "source": {
+    "type": "GITHUB_WORKSPACE",
+    "repository": "BrunoDev81/dashboard-manager-artifacts",
+    "branch": "main",
+    "path": "dashboard-manager-artifacts/dashboards/rtrtr/trtrtr"
+  },
+  "visualIdentity": "GRUPO_DISAL_LOCKED"
+}
