@@ -103,9 +103,11 @@ function toNumber(value) {
   if (typeof unwrapped === "number") return Number.isFinite(unwrapped) ? unwrapped : 0;
   if (unwrapped === null || unwrapped === undefined || unwrapped === "") return 0;
 
-  const normalized = String(unwrapped)
-    .trim()
-    .replace(/\s/g, "")
+  const compact = String(unwrapped).trim().replace(/\s/g, "");
+  const direct = Number(compact);
+  if (Number.isFinite(direct)) return direct;
+
+  const normalized = compact
     .replace(/\.(?=\d{3}(?:\D|$))/g, "")
     .replace(",", ".");
 
@@ -118,19 +120,39 @@ function cleanText(value, fallback = "Sin dato") {
   return text || fallback;
 }
 
+function getFirstField(row, fieldNames) {
+  for (const fieldName of fieldNames) {
+    const value = getField(row, fieldName);
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return undefined;
+}
+
 function normalizeProduct(row) {
   return {
-    id: cleanText(getField(row, "producto_id")),
-    name: cleanText(getField(row, "producto")),
-    volumeMaterial: cleanText(getField(row, "volumen_material")),
-    materialClass: cleanText(getField(row, "clase_material")),
-    group: cleanText(getField(row, "grupo")),
-    division: cleanText(getField(row, "division")),
-    brand: cleanText(getField(row, "marca")),
-    depositStock: toNumber(getField(row, "und_stock_deposito")),
-    transitStock: toNumber(getField(row, "und_stock_transito")),
-    depositVolume: toNumber(getField(row, "vol_stock_deposito")),
-    transitVolume: toNumber(getField(row, "vol_stock_transito"))
+    id: cleanText(getFirstField(row, ["producto_id", "productoId", "codigo_producto"])),
+    name: cleanText(getFirstField(row, ["producto", "product"])),
+    volumeMaterial: cleanText(getFirstField(row, ["volumen_material", "volume_material"])),
+    materialClass: cleanText(getFirstField(row, ["clase_material", "material_class"])),
+    group: cleanText(getFirstField(row, ["grupo", "group"])),
+    division: cleanText(getFirstField(row, ["division", "division_name"])),
+    brand: cleanText(getFirstField(row, ["marca", "brand"])),
+    depositStock: toNumber(getFirstField(row, [
+      "und_stock_deposito",
+      "undStockDeposito",
+      "stock_deposito",
+      "stockDeposito",
+      "estoque_deposito"
+    ])),
+    transitStock: toNumber(getFirstField(row, [
+      "und_stock_transito",
+      "undStockTransito",
+      "stock_transito",
+      "stockTransito",
+      "estoque_transito"
+    ])),
+    depositVolume: toNumber(getFirstField(row, ["vol_stock_deposito", "volStockDeposito"])),
+    transitVolume: toNumber(getFirstField(row, ["vol_stock_transito", "volStockTransito"]))
   };
 }
 
