@@ -187,8 +187,12 @@ function renderRanking(products) {
     const track = document.createElement("span");
     track.className = "rank-track";
     const bar = document.createElement("span");
-    bar.className = "rank-bar";
-    bar.style.width = Math.max((Math.max(product.depositStock, 0) / max) * 100, 2) + "%";
+    const isZeroStock = product.depositStock <= 0;
+    bar.className = "rank-bar" + (isZeroStock ? " zero" : "");
+    bar.title = isZeroStock ? "Sin stock" : numberFormatter.format(product.depositStock) + " unidades";
+    bar.style.width = isZeroStock
+      ? "8px"
+      : Math.max((Math.max(product.depositStock, 0) / max) * 100, 2) + "%";
     track.appendChild(bar);
 
     const value = document.createElement("span");
