@@ -199,6 +199,9 @@ select:focus {
 }
 
 .dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   margin-top: 18px;
 }
 
@@ -256,13 +259,17 @@ select:focus {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
   gap: 14px;
-  margin-top: 14px;
+  order: 3;
 }
 
 .ranking-card,
 .summary-card,
 .table-card {
   padding: 22px;
+}
+
+.table-card {
+  order: 2;
 }
 
 .ranking-list {
@@ -298,6 +305,11 @@ select:focus {
   min-width: 4px;
   border-radius: inherit;
   background: #00a6df;
+}
+
+.rank-bar.zero {
+  width: 8px !important;
+  background: #c43e4b;
 }
 
 .rank-value {
@@ -365,7 +377,7 @@ code {
 }
 
 .table-card {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .caption {
