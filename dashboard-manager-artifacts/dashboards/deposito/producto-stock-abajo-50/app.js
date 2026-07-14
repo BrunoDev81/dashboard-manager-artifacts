@@ -22,6 +22,11 @@ const elements = {
   clear: document.getElementById("clearFilters"),
   rows: document.getElementById("productRows"),
   ranking: document.getElementById("ranking"),
+  groupDonut: document.getElementById("groupDonut"),
+  groupLegend: document.getElementById("groupLegend"),
+  goalWidgets: document.getElementById("goalWidgets"),
+  dailyColumns: document.getElementById("dailyColumns"),
+  dailyNote: document.getElementById("dailyNote"),
   resultCount: document.getElementById("resultCount"),
   tableNote: document.getElementById("tableNote"),
   kpiProducts: document.getElementById("kpiProducts"),
@@ -285,6 +290,139 @@ function renderRanking(products) {
   elements.ranking.replaceChildren(fragment);
 }
 
+const WIDGET_COLORS = ["#0072bc", "#00a6df", "#009a44", "#f3b51b", "#c43e4b"];
+
+function createSvgElement(name, attributes) {
+  const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+  Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+  return element;
+}
+
+function renderDonut(products) {
+  const counts = new Map();
+  products.forEach((product) => {
+    const group = product.group === "Sin dato" ? "Sin grupo" : product.group;
+    counts.set(group, (counts.get(group) || 0) + 1);
+  });
+
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  const top = sorted.slice(0, 4);
+  const remainder = sorted.slice(4).reduce((sum, entry) => sum + entry[1], 0);
+  if (remainder) top.push(["Otros", remainder]);
+
+  const total = products.length || 1;
+  const svg = createSvgElement("svg", {
+    class: "donut-svg",
+    viewBox: "0 0 120 120",
+    role: "img",
+    "aria-label": "Participación de productos por grupo"
+  });
+  svg.appendChild(createSvgElement("circle", {
+    cx: 60, cy: 60, r: 42, fill: "none", stroke: "#eef7ff", "stroke-width": 16
+  }));
+
+  let offset = 0;
+  top.forEach(([label, count], index) => {
+    const length = (count / total) * 263.89;
+    svg.appendChild(createSvgElement("circle", {
+      cx: 60, cy: 60, r: 42, fill: "none",
+      stroke: WIDGET_COLORS[index % WIDGET_COLORS.length],
+      "stroke-width": 16,
+      "stroke-dasharray": length + " " + (263.89 - length),
+      "stroke-dashoffset": -offset,
+      transform: "rotate(-90 60 60)"
+    }));
+    offset += length;
+  });
+
+  const centerValue = createSvgElement("text", { x: 60, y: 58, class: "donut-center-value" });
+  centerValue.textContent = numberFormatter.format(products.length);
+  const centerLabel = createSvgElement("text", { x: 60, y: 69, class: "donut-center-label" });
+  centerLabel.textContent = "productos";
+  svg.append(centerValue, centerLabel);
+  elements.groupDonut.replaceChildren(svg);
+
+  const legend = document.createDocumentFragment();
+  top.forEach(([label, count], index) => {
+    const row = document.createElement("div");
+    row.className = "legend-row";
+    const dot = document.createElement("span");
+    dot.className = "legend-dot";
+    dot.style.backgroundColor = WIDGET_COLORS[index % WIDGET_COLORS.length];
+    const name = document.createElement("span");
+    name.textContent = label;
+    const value = document.createElement("span");
+    value.className = "legend-value";
+    value.textContent = numberFormatter.format((count / total) * 100) + "%";
+    row.append(dot, name, value);
+    legend.appendChild(row);
+  });
+  elements.groupLegend.replaceChildren(legend);
+}
+
+function createGoalWidget(title, current, target, suffix, alert) {
+  const item = document.createElement("div");
+  item.className = "goal-item";
+  const head = document.createElement("div");
+  head.className = "goal-head";
+  const label = document.createElement("span");
+  label.textContent = title;
+  const currentValue = document.createElement("strong");
+  currentValue.className = "goal-current";
+  currentValue.textContent = numberFormatter.format(current) + " " + suffix;
+  head.append(label, currentValue);
+
+  const track = document.createElement("div");
+  track.className = "goal-track";
+  const fill = document.createElement("div");
+  fill.className = "goal-fill" + (alert ? " alert" : "");
+  const progress = target > 0 ? Math.min((current / target) * 100, 100) : (current === 0 ? 100 : 4);
+  fill.style.width = progress + "%";
+  track.appendChild(fill);
+
+  const meta = document.createElement("div");
+  meta.className = "goal-meta";
+  const range = document.createElement("span");
+  range.textContent = "Rango 0–" + numberFormatter.format(target);
+  const goal = document.createElement("span");
+  goal.textContent = "Meta: " + numberFormatter.format(target);
+  meta.append(range, goal);
+  item.append(head, track, meta);
+  return item;
+}
+
+function renderGoals(products) {
+  const positive = products.filter((product) => product.depositStock > 0).length;
+  const noStock = products.filter((product) => product.depositStock <= 0).length;
+  elements.goalWidgets.replaceChildren(
+    createGoalWidget("Cobertura con stock", positive, products.length, "productos", false),
+    createGoalWidget("Productos sin stock", noStock, 0, "productos", true)
+  );
+}
+
+function renderDailyColumns(products) {
+  const positive = products.filter((product) => product.depositStock > 0).length;
+  const availability = products.length ? (positive / products.length) * 100 : 0;
+  const column = document.createElement("div");
+  column.className = "daily-column";
+  column.title = "Snapshot actual: " + numberFormatter.format(products.length) + " productos; disponibilidad " + numberFormatter.format(availability) + "%";
+  const value = document.createElement("span");
+  value.className = "daily-value";
+  value.textContent = numberFormatter.format(products.length);
+  const track = document.createElement("div");
+  track.className = "daily-bar-track";
+  const bar = document.createElement("div");
+  bar.className = "daily-bar";
+  bar.style.height = Math.max(availability, 4) + "%";
+  track.appendChild(bar);
+  const day = document.createElement("span");
+  day.className = "daily-label";
+  day.textContent = "Hoy";
+  column.append(value, track, day);
+  elements.dailyColumns.replaceChildren(column);
+  elements.dailyNote.textContent = "Valor: productos hasta 50 · Disponibilidad: " + numberFormatter.format(availability) + "%. Sin histórico diario en el dataset autorizado.";
+}
+
 function renderMetrics(products) {
   const counts = {
     noStock: 0,
@@ -330,6 +468,9 @@ function applyFilters() {
   elements.feedback.hidden = true;
   elements.content.hidden = false;
   renderMetrics(state.filtered);
+  renderDonut(state.filtered);
+  renderGoals(state.filtered);
+  renderDailyColumns(state.filtered);
   renderRanking(state.filtered);
   renderTable(state.filtered);
 }
