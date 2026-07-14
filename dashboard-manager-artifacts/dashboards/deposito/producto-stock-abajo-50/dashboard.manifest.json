@@ -1,6 +1,6 @@
 {
   "name": "Producto Stock Abajo 50",
-  "description": "Vista operativa de productos con menos de 50 unidades en stock de depósito.",
+  "description": "Vista operativa de productos con hasta 50 unidades en stock de depósito.",
   "entrypoint": "index.html",
   "version": "1.1.0",
   "requiresApi": true,
