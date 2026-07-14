@@ -277,6 +277,16 @@ select:focus {
   gap: 13px;
 }
 
+.ranking-empty {
+  margin: 8px 0 0;
+  padding: 14px;
+  border: 1px dashed #b9d4ec;
+  border-radius: 9px;
+  color: #526b80;
+  background: #f9fcff;
+  font-size: 13px;
+}
+
 .rank-row {
   display: grid;
   grid-template-columns: minmax(130px, 220px) minmax(120px, 1fr) 56px;
