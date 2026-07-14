@@ -38,10 +38,28 @@ const numberFormatter = new Intl.NumberFormat("es-AR", {
   maximumFractionDigits: 2
 });
 
+function columnName(column) {
+  if (typeof column === "string") return column;
+  if (!column || typeof column !== "object") return "";
+  return column.name || column.field || column.column_name || column.column || "";
+}
+
+function rowsWithColumns(rows, columns) {
+  if (!Array.isArray(rows) || !rows.length || !Array.isArray(rows[0]) || !Array.isArray(columns)) {
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  const names = columns.map(columnName);
+  return rows.map((values) => Object.fromEntries(
+    names.map((name, index) => [name, values[index]])
+  ));
+}
+
 function extractRows(payload) {
   if (Array.isArray(payload)) return payload;
   if (!payload || typeof payload !== "object") return [];
 
+  const columns = payload.columns || payload.fields || payload.headers || payload.columnNames;
   const candidates = [
     payload.rows,
     payload.data,
@@ -51,7 +69,27 @@ function extractRows(payload) {
     payload.result
   ];
 
-  return candidates.find(Array.isArray) || [];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      const rows = rowsWithColumns(candidate, columns);
+      if (rows.length) return rows;
+    }
+    if (candidate && typeof candidate === "object") {
+      const nested = extractRows(candidate);
+      if (nested.length) return nested;
+    }
+  }
+
+  return [];
+}
+
+function getField(row, fieldName) {
+  if (!row || typeof row !== "object") return undefined;
+  if (Object.prototype.hasOwnProperty.call(row, fieldName)) return row[fieldName];
+
+  const wanted = fieldName.toLowerCase();
+  const matchingKey = Object.keys(row).find((key) => key.toLowerCase() === wanted);
+  return matchingKey ? row[matchingKey] : undefined;
 }
 
 function toNumber(value) {
@@ -75,17 +113,17 @@ function cleanText(value, fallback = "Sin dato") {
 
 function normalizeProduct(row) {
   return {
-    id: cleanText(row.producto_id),
-    name: cleanText(row.producto),
-    volumeMaterial: cleanText(row.volumen_material),
-    materialClass: cleanText(row.clase_material),
-    group: cleanText(row.grupo),
-    division: cleanText(row.division),
-    brand: cleanText(row.marca),
-    depositStock: toNumber(row.und_stock_deposito),
-    transitStock: toNumber(row.und_stock_transito),
-    depositVolume: toNumber(row.vol_stock_deposito),
-    transitVolume: toNumber(row.vol_stock_transito)
+    id: cleanText(getField(row, "producto_id")),
+    name: cleanText(getField(row, "producto")),
+    volumeMaterial: cleanText(getField(row, "volumen_material")),
+    materialClass: cleanText(getField(row, "clase_material")),
+    group: cleanText(getField(row, "grupo")),
+    division: cleanText(getField(row, "division")),
+    brand: cleanText(getField(row, "marca")),
+    depositStock: toNumber(getField(row, "und_stock_deposito")),
+    transitStock: toNumber(getField(row, "und_stock_transito")),
+    depositVolume: toNumber(getField(row, "vol_stock_deposito")),
+    transitVolume: toNumber(getField(row, "vol_stock_transito"))
   };
 }
 
