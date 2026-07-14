@@ -25,8 +25,6 @@ const elements = {
   groupDonut: document.getElementById("groupDonut"),
   groupLegend: document.getElementById("groupLegend"),
   goalWidgets: document.getElementById("goalWidgets"),
-  dailyColumns: document.getElementById("dailyColumns"),
-  dailyNote: document.getElementById("dailyNote"),
   resultCount: document.getElementById("resultCount"),
   tableNote: document.getElementById("tableNote"),
   kpiProducts: document.getElementById("kpiProducts"),
@@ -400,29 +398,6 @@ function renderGoals(products) {
   );
 }
 
-function renderDailyColumns(products) {
-  const positive = products.filter((product) => product.depositStock > 0).length;
-  const availability = products.length ? (positive / products.length) * 100 : 0;
-  const column = document.createElement("div");
-  column.className = "daily-column";
-  column.title = "Snapshot actual: " + numberFormatter.format(products.length) + " productos; disponibilidad " + numberFormatter.format(availability) + "%";
-  const value = document.createElement("span");
-  value.className = "daily-value";
-  value.textContent = numberFormatter.format(products.length);
-  const track = document.createElement("div");
-  track.className = "daily-bar-track";
-  const bar = document.createElement("div");
-  bar.className = "daily-bar";
-  bar.style.height = Math.max(availability, 4) + "%";
-  track.appendChild(bar);
-  const day = document.createElement("span");
-  day.className = "daily-label";
-  day.textContent = "Hoy";
-  column.append(value, track, day);
-  elements.dailyColumns.replaceChildren(column);
-  elements.dailyNote.textContent = "Valor: productos hasta 50 · Disponibilidad: " + numberFormatter.format(availability) + "%. Sin histórico diario en el dataset autorizado.";
-}
-
 function renderMetrics(products) {
   const counts = {
     noStock: 0,
@@ -470,7 +445,6 @@ function applyFilters() {
   renderMetrics(state.filtered);
   renderDonut(state.filtered);
   renderGoals(state.filtered);
-  renderDailyColumns(state.filtered);
   renderRanking(state.filtered);
   renderTable(state.filtered);
 }
