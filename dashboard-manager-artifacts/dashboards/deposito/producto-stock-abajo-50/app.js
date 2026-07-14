@@ -342,7 +342,7 @@ async function loadDashboard() {
   }
 
   try {
-    const payload = await window.DashboardManager.getDataset(DATASET_NAME, {});
+    const payload = await window.DashboardManager.getDataset(DATASET_NAME, { limit: 5000, offset: 0 });
     const rows = extractRows(payload);
 
     state.products = rows
