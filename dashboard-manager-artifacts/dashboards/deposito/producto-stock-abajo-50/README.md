@@ -36,7 +36,7 @@ El contrato también autoriza volumen material, división y volúmenes de stock.
 
 ## Supuestos y límites
 
-- El dataset no expone campos de período ni responsable. Por eso no se inventan esos filtros; quedan reemplazados por búsqueda, marca, grupo y estado de stock, todos derivados de columnas autorizadas.
+- Al abrir el dashboard, el filtro Estado de stock muestra por defecto productos con stock entre 1 y 50; se puede elegir “Todos (incluye sin stock)” para consultar ceros. El dataset no expone campos de período ni responsable. Por eso no se inventan esos filtros; quedan reemplazados por búsqueda, marca, grupo y estado de stock, todos derivados de columnas autorizadas.
 - No existen cruces entre datasets.
 - Los valores numéricos nulos o vacíos se interpretan como 0 para la lectura operativa.
 - La tabla muestra hasta 100 filas para mantener una respuesta fluida; los KPIs y el ranking contemplan todos los registros filtrados.
