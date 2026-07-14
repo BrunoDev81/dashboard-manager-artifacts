@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Productos con hasta 50 unidades en stock de depósito.">
+  <title>Producto Stock Hasta 50</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="brand">GRUPO DISAL</p>
+        <h1>Productos con stock de hasta 50</h1>
+        <p class="hero-copy">Seguimiento operativo de productos que requieren atención por bajo stock en depósito.</p>
+      </div>
+      <div class="hero-meta" aria-label="Estado del tablero">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="updatedAt">Actualizando datos...</span>
+      </div>
+    </header>
+
+    <section class="filters card" aria-labelledby="filtersTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Filtros</p>
+          <h2 id="filtersTitle">Acotá la lista de productos</h2>
+        </div>
+        <button id="clearFilters" class="secondary-button" type="button">Limpiar filtros</button>
+      </div>
+      <div class="filter-grid">
+        <label>
+          <span>Buscar producto</span>
+          <input id="searchInput" type="search" placeholder="Código o descripción" autocomplete="off">
+        </label>
+        <label>
+          <span>Marca</span>
+          <select id="brandFilter"><option value="">Todas</option></select>
+        </label>
+        <label>
+          <span>Grupo</span>
+          <select id="groupFilter"><option value="">Todos</option></select>
+        </label>
+        <label>
+          <span>Estado de stock</span>
+          <select id="statusFilter">
+            <option value="">Todos</option>
+            <option value="sin-stock">Sin stock</option>
+            <option value="critico">Crítico · 1 a 10</option>
+            <option value="bajo">Bajo · 11 a 25</option>
+            <option value="atencion">Atención · 26 a 50</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section id="feedback" class="feedback card" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <h2 id="feedbackTitle">Cargando productos</h2>
+        <p id="feedbackMessage">Consultando el dataset autorizado dim_producto.</p>
+      </div>
+    </section>
+
+    <div id="dashboardContent" class="dashboard-content" hidden>
+      <section class="kpi-grid" aria-label="Indicadores principales">
+        <article class="kpi card kpi-alert">
+          <p>Productos hasta 50</p>
+          <strong id="kpiProducts">0</strong>
+          <span>según los filtros activos</span>
+        </article>
+        <article class="kpi card kpi-risk">
+          <p>Sin stock</p>
+          <strong id="kpiNoStock">0</strong>
+          <span>stock de depósito menor o igual a 0</span>
+        </article>
+        <article class="kpi card kpi-alert">
+          <p>Stock crítico</p>
+          <strong id="kpiCritical">0</strong>
+          <span>entre 1 y 10 unidades</span>
+        </article>
+        <article class="kpi card kpi-info">
+          <p>Unidades en tránsito</p>
+          <strong id="kpiTransit">0</strong>
+          <span>total para los productos visibles</span>
+        </article>
+      </section>
+
+      <section class="insights-grid">
+        <article class="card ranking-card" aria-labelledby="rankingTitle">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">Ranking horizontal</p>
+              <h2 id="rankingTitle">Menor stock disponible</h2>
+            </div>
+            <span class="caption">Top 8</span>
+          </div>
+          <div id="ranking" class="ranking-list"></div>
+        </article>
+
+        <article class="card summary-card" aria-labelledby="summaryTitle">
+          <p class="eyebrow">Lectura operativa</p>
+          <h2 id="summaryTitle">Distribución del riesgo</h2>
+          <div class="risk-list">
+            <div><span class="risk-dot risk-none"></span><span>Sin stock</span><strong id="riskNoStock">0</strong></div>
+            <div><span class="risk-dot risk-critical"></span><span>Crítico</span><strong id="riskCritical">0</strong></div>
+            <div><span class="risk-dot risk-low"></span><span>Bajo</span><strong id="riskLow">0</strong></div>
+            <div><span class="risk-dot risk-watch"></span><span>Atención</span><strong id="riskWatch">0</strong></div>
+          </div>
+          <p class="note">El estado se deriva de <code>und_stock_deposito</code>. Período y responsable no están disponibles en el dataset autorizado.</p>
+        </article>
+      </section>
+
+      <section class="card table-card" aria-labelledby="tableTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Tabla analítica</p>
+            <h2 id="tableTitle">Detalle de productos</h2>
+          </div>
+          <p id="resultCount" class="caption">0 resultados</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Marca</th>
+                <th scope="col">Grupo</th>
+                <th scope="col">Clase</th>
+                <th scope="col" class="numeric">Stock depósito</th>
+                <th scope="col" class="numeric">Stock tránsito</th>
+                <th scope="col">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="productRows"></tbody>
+          </table>
+        </div>
+        <p id="tableNote" class="table-note"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="/dashboard-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
