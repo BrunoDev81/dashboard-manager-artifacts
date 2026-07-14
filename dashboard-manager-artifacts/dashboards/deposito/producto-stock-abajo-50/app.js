@@ -87,16 +87,23 @@ function getField(row, fieldName) {
   if (!row || typeof row !== "object") return undefined;
   if (Object.prototype.hasOwnProperty.call(row, fieldName)) return row[fieldName];
 
-  const wanted = fieldName.toLowerCase();
-  const matchingKey = Object.keys(row).find((key) => key.toLowerCase() === wanted);
+  const normalizeKey = (key) => String(key).toLowerCase().replace(/[^a-z0-9]/g, "");
+  const wanted = normalizeKey(fieldName);
+  const matchingKey = Object.keys(row).find((key) => normalizeKey(key) === wanted);
   return matchingKey ? row[matchingKey] : undefined;
 }
 
-function toNumber(value) {
-  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  if (value === null || value === undefined || value === "") return 0;
+function unwrapValue(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  return value.value ?? value.raw ?? value.numericValue ?? value.amount ?? value.data ?? value;
+}
 
-  const normalized = String(value)
+function toNumber(value) {
+  const unwrapped = unwrapValue(value);
+  if (typeof unwrapped === "number") return Number.isFinite(unwrapped) ? unwrapped : 0;
+  if (unwrapped === null || unwrapped === undefined || unwrapped === "") return 0;
+
+  const normalized = String(unwrapped)
     .trim()
     .replace(/\s/g, "")
     .replace(/\.(?=\d{3}(?:\D|$))/g, "")
