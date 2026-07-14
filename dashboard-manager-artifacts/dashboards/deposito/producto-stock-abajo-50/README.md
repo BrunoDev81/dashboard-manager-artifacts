@@ -7,7 +7,7 @@ Dashboard operativo para identificar productos con hasta 50 unidades en stock de
 - Fuente autorizada: `dim_producto`.
 - Estados editables: ninguno.
 - Archivos estáticos de datos: ninguno.
-- Integración de runtime: `DashboardManager.getDataset("dim_producto", {})`.
+- Integración de runtime: `DashboardManager.getDataset("dim_producto", { page, pageSize })`, con paginación del SDK.
 - Identidad visual: `GRUPO_DISAL_LOCKED`.
 - No requiere backend, credenciales, tokens, CDN ni servicios externos.
 
@@ -36,11 +36,18 @@ El contrato también autoriza volumen material, división y volúmenes de stock.
 
 ## Supuestos y límites
 
-- Al abrir el dashboard, el filtro Estado de stock muestra por defecto productos con stock entre 1 y 50; se puede elegir “Todos (incluye sin stock)” para consultar ceros. El dataset no expone campos de período ni responsable. Por eso no se inventan esos filtros; quedan reemplazados por búsqueda, marca, grupo y estado de stock, todos derivados de columnas autorizadas.
+- El filtro Estado de stock inicia en “Todos · 0 a 50” e incluye ceros. El dataset no expone campos de período ni responsable. Por eso no se inventan esos filtros; quedan reemplazados por búsqueda, marca, grupo y estado de stock, todos derivados de columnas autorizadas.
 - No existen cruces entre datasets.
 - Los valores numéricos nulos o vacíos se interpretan como 0 para la lectura operativa.
 - La tabla muestra hasta 100 filas para mantener una respuesta fluida; los KPIs y el ranking contemplan todos los registros filtrados.
-- Si la forma de respuesta del SDK varía, la interfaz acepta un arreglo directo o colecciones en `rows`, `data`, `items`, `records`, `results` o `result`.
+- Si la forma de respuesta del SDK varía, la interfaz acepta un arreglo directo o colecciones en `rows`, `data`, `items`, `records`, `results` o `result`, además de respuestas tabulares con columnas y filas matriciales.
+
+## Widgets corporativos agregados
+
+- **Participación donut** (1): participación de productos por `grupo`. Usa conteos de productos dentro del filtro activo.
+- **Indicadores de objetivo** (2): “Cobertura con stock” (productos positivos sobre el total filtrado) y “Productos sin stock” (objetivo cero).
+- **Columnas diarias con pista** (1): snapshot “Hoy”, con cantidad de productos hasta 50 y porcentaje de disponibilidad positiva.
+- No hay histórico diario ni metas de negocio en `dim_producto`; por eso el widget diario usa el snapshot actual y los indicadores usan metas derivadas del conjunto visible.
 
 ## Validación
 
