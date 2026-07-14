@@ -1,6 +1,6 @@
 # Producto Stock Abajo 50
 
-Dashboard operativo para identificar productos con menos de 50 unidades en stock de depósito. Está preparado para publicarse en Dashboard Manager y usa exclusivamente el SDK corporativo.
+Dashboard operativo para identificar productos con hasta 50 unidades en stock de depósito. Está preparado para publicarse en Dashboard Manager y usa exclusivamente el SDK corporativo.
 
 ## Contrato de ejecución
 
@@ -15,12 +15,12 @@ Dashboard operativo para identificar productos con menos de 50 unidades en stock
 
 ## Criterio del dashboard
 
-Se incluyen únicamente registros cuyo `und_stock_deposito` sea menor a 50. El estado operativo se deriva de ese campo:
+Se incluyen únicamente registros cuyo `und_stock_deposito` sea menor o igual a 50. El estado operativo se deriva de ese campo:
 
 - Sin stock: menor o igual a 0.
 - Crítico: entre 1 y 10.
 - Bajo: entre 11 y 25.
-- Atención: entre 26 y 49.
+- Atención: entre 26 y 50.
 
 La interfaz presenta cuatro KPIs con estado, un ranking horizontal y una tabla analítica, dentro de los widgets corporativos aprobados.
 
