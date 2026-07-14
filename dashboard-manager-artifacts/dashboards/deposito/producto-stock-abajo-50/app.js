@@ -120,15 +120,11 @@ function matchesFilters(product) {
   const query = elements.search.value.trim().toLocaleLowerCase("es");
   const haystack = (product.id + " " + product.name).toLocaleLowerCase("es");
   const status = stockStatus(product.depositStock).key;
-  const statusFilter = elements.status.value;
-  const matchesStatus = statusFilter === "nonzero"
-    ? product.depositStock > 0
-    : !statusFilter || status === statusFilter;
 
   return (!query || haystack.includes(query))
     && (!elements.brand.value || product.brand === elements.brand.value)
     && (!elements.group.value || product.group === elements.group.value)
-    && matchesStatus;
+    && (!elements.status.value || status === elements.status.value);
 }
 
 function createCell(value, className = "") {
@@ -263,7 +259,7 @@ function clearFilters() {
   elements.search.value = "";
   elements.brand.value = "";
   elements.group.value = "";
-  elements.status.value = "nonzero";
+  elements.status.value = "";
   applyFilters();
 }
 
