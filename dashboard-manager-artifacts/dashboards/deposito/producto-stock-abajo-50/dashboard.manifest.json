@@ -1,8 +1,8 @@
 {
-  "name": "Dashboard en blanco",
-  "description": "Base corporativa para iniciar un dashboard con datos controlados por Dashboard Manager.",
+  "name": "Producto Stock Abajo 50",
+  "description": "Vista operativa de productos con menos de 50 unidades en stock de depósito.",
   "entrypoint": "index.html",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "requiresApi": true,
   "visualIdentity": "GRUPO_DISAL_LOCKED",
   "allowedDataSources": [
