@@ -257,7 +257,7 @@ select:focus {
 
 .approved-widgets {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 14px;
   order: 2;
 }
@@ -378,60 +378,6 @@ select:focus {
   font-size: 11px;
 }
 
-.daily-chart {
-  display: flex;
-  align-items: end;
-  gap: 22px;
-  height: 164px;
-  margin-top: 18px;
-  padding: 12px 10px 0;
-  border-bottom: 1px solid #cfe2f5;
-}
-
-.daily-column {
-  display: grid;
-  flex: 1;
-  align-items: end;
-  justify-items: center;
-  gap: 8px;
-  height: 100%;
-}
-
-.daily-bar-track {
-  display: flex;
-  align-items: end;
-  width: 38px;
-  height: 116px;
-  overflow: hidden;
-  border-radius: 8px 8px 0 0;
-  background: #eef7ff;
-}
-
-.daily-bar {
-  width: 100%;
-  min-height: 4px;
-  border-radius: 8px 8px 0 0;
-  background: #00a6df;
-}
-
-.daily-label {
-  color: #526b80;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.daily-value {
-  color: #16476b;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.widget-note {
-  margin: 12px 0 0;
-  color: #6c8193;
-  font-size: 11px;
-  line-height: 1.4;
-}
 
 .insights-grid {
   display: grid;
@@ -447,7 +393,7 @@ select:focus {
 }
 
 .table-card {
-  order: 2;
+  order: 4;
 }
 
 .ranking-list {
