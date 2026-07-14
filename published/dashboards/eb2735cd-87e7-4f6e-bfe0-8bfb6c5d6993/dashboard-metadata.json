@@ -1,0 +1,29 @@
+{
+  "dashboardId": "eb2735cd-87e7-4f6e-bfe0-8bfb6c5d6993",
+  "title": "Producto Stock Abajo 50",
+  "businessArea": "Deposito",
+  "ownerSubject": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "currentVersionId": "e600ded0-f018-4b70-87e5-d5dd3b4f4020",
+  "currentVersionLabel": "github-20260714162511",
+  "publishedAt": "2026-07-14T16:25:27.8267869Z",
+  "publishedBy": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "manifest": {
+    "name": "Producto Stock Abajo 50",
+    "source": {
+      "path": "dashboard-manager-artifacts/dashboards/deposito/producto-stock-abajo-50",
+      "type": "GITHUB_WORKSPACE",
+      "branch": "main",
+      "repository": "BrunoDev81/dashboard-manager-artifacts"
+    },
+    "version": "1.1.0",
+    "entrypoint": "index.html",
+    "description": "Vista operativa de productos con hasta 50 unidades en stock de dep\u00F3sito.",
+    "requiresApi": true,
+    "visualIdentity": "GRUPO_DISAL_LOCKED",
+    "staticDataFiles": [],
+    "editableStateKeys": [],
+    "allowedDataSources": [
+      "dim_producto"
+    ]
+  }
+}
