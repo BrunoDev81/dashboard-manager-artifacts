@@ -239,8 +239,20 @@ function renderTable(products) {
 
 function renderRanking(products) {
   const fragment = document.createDocumentFragment();
-  const ranked = products.slice(0, 8);
-  const max = Math.max(...ranked.map((product) => Math.max(product.depositStock, 0)), 1);
+  const ranked = products
+    .filter((product) => product.depositStock > 0)
+    .slice(0, 8);
+
+  if (!ranked.length) {
+    const empty = document.createElement("p");
+    empty.className = "ranking-empty";
+    empty.textContent = "No hay productos con stock positivo en la selección actual.";
+    fragment.appendChild(empty);
+    elements.ranking.replaceChildren(fragment);
+    return;
+  }
+
+  const max = Math.max(...ranked.map((product) => product.depositStock), 1);
 
   ranked.forEach((product) => {
     const row = document.createElement("div");
