@@ -1,0 +1,17 @@
+{
+  "dashboardId": "eb2735cd-87e7-4f6e-bfe0-8bfb6c5d6993",
+  "dashboardTitle": "Producto Stock Abajo 50",
+  "businessArea": "Deposito",
+  "templateKey": "blank-dashboard",
+  "createdBy": "5b72e97e-10b6-4e2b-b716-94cc8081e723",
+  "createdAt": "2026-07-14T16:11:03.2394522Z",
+  "allowedDataSources": [
+    "dim_producto"
+  ],
+  "editableStateKeys": [],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
