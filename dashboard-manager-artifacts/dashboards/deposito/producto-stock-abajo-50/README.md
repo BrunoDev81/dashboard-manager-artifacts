@@ -36,7 +36,7 @@ El contrato también autoriza volumen material, división y volúmenes de stock.
 
 ## Supuestos y límites
 
-- El filtro Estado de stock inicia en “Todos · 0 a 50” e incluye ceros. El dataset no expone campos de período ni responsable. Por eso no se inventan esos filtros; quedan reemplazados por búsqueda, marca, grupo y estado de stock, todos derivados de columnas autorizadas.
+- El filtro Estado de stock inicia en “Todos · 0 a 50” e incluye ceros. El dataset no expone campos de período ni responsable; el área acumulada solo se dibuja cuando existe una fecha válida autorizada (`fecha` o `updated_at`). Por eso no se inventan esos filtros; quedan reemplazados por búsqueda, marca, grupo y estado de stock, todos derivados de columnas autorizadas.
 - No existen cruces entre datasets.
 - Los valores numéricos nulos o vacíos se interpretan como 0 para la lectura operativa.
 - La tabla muestra hasta 100 filas para mantener una respuesta fluida; los KPIs y el ranking contemplan todos los registros filtrados.
@@ -46,6 +46,7 @@ El contrato también autoriza volumen material, división y volúmenes de stock.
 
 - **Participación donut** (1): participación de productos por `grupo`. Usa conteos de productos dentro del filtro activo.
 - **Indicadores de objetivo** (2): “Cobertura con stock” (productos positivos sobre el total filtrado) y “Productos sin stock” (objetivo cero).
+- **Área acumulada** (1): evolución acumulada por `fecha`/`updated_at` (Fecha), `und_stock_deposito` (valor) y `grupo` (serie). Si el dataset no entrega una fecha válida, el widget muestra estado vacío.
 - Se descartó **Columnas diarias con pista** porque `dim_producto` no contiene un campo histórico diario autorizado; así evitamos presentar un snapshot como si fuera una serie temporal.
 - Los indicadores usan metas derivadas del conjunto visible y mantienen estados loading, vacío y error sin inventar datos.
 
