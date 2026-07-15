@@ -25,6 +25,8 @@ const elements = {
   groupDonut: document.getElementById("groupDonut"),
   groupLegend: document.getElementById("groupLegend"),
   goalWidgets: document.getElementById("goalWidgets"),
+  accumulatedArea: document.getElementById("accumulatedArea"),
+  areaNote: document.getElementById("areaNote"),
   resultCount: document.getElementById("resultCount"),
   tableNote: document.getElementById("tableNote"),
   kpiProducts: document.getElementById("kpiProducts"),
@@ -139,6 +141,7 @@ function normalizeProduct(row) {
     materialClass: cleanText(getFirstField(row, ["clase_material", "material_class"])),
     group: cleanText(getFirstField(row, ["grupo", "group"])),
     division: cleanText(getFirstField(row, ["division", "division_name"])),
+    date: getFirstField(row, ["fecha", "date", "updated_at", "updatedAt", "fecha_actualizacion"]),
     brand: cleanText(getFirstField(row, ["marca", "brand"])),
     depositStock: toNumber(getFirstField(row, [
       "und_stock_deposito",
@@ -155,7 +158,9 @@ function normalizeProduct(row) {
       "estoque_transito"
     ])),
     depositVolume: toNumber(getFirstField(row, ["vol_stock_deposito", "volStockDeposito"])),
-    transitVolume: toNumber(getFirstField(row, ["vol_stock_transito", "volStockTransito"]))
+    transitVolume: toNumber(getFirstField(row, ["vol_stock_transito", "volStockTransito"])),
+    areaValue: toNumber(getFirstField(row, ["und_stock_deposito", "stock_deposito", "stockDeposito"])),
+    areaSeries: cleanText(getFirstField(row, ["grupo", "group"]), "Sin serie")
   };
 }
 
@@ -398,6 +403,118 @@ function renderGoals(products) {
   );
 }
 
+function renderAccumulatedArea(products) {
+  const dated = products
+    .map((product) => {
+      const parsed = product.date ? new Date(product.date) : null;
+      return parsed && !Number.isNaN(parsed.getTime())
+        ? { product, date: parsed.toISOString().slice(0, 10) }
+        : null;
+    })
+    .filter(Boolean);
+
+  if (!dated.length) {
+    elements.accumulatedArea.replaceChildren(Object.assign(document.createElement("p"), {
+      className: "area-empty",
+      textContent: "No hay fechas autorizadas para construir una serie acumulada."
+    }));
+    elements.areaNote.textContent = "Se requieren Fecha, valor y serie en el dataset autorizado.";
+    return;
+  }
+
+  const dates = [...new Set(dated.map((item) => item.date))].sort();
+  const series = [...new Set(dated.map((item) => item.product.areaSeries))];
+  const colors = ["#0072bc", "#00a6df", "#009a44", "#f3b51b", "#c43e4b"];
+  const width = 640;
+  const height = 190;
+  const left = 36;
+  const right = 14;
+  const top = 16;
+  const bottom = 28;
+  const chartWidth = width - left - right;
+  const chartHeight = height - top - bottom;
+  const totals = new Map();
+  dated.forEach(({ product, date }) => {
+    const key = date + "|" + product.areaSeries;
+    totals.set(key, (totals.get(key) || 0) + product.areaValue);
+  });
+
+  const cumulative = series.map((name) => {
+    let running = 0;
+    return dates.map((date) => {
+      running += totals.get(date + "|" + name) || 0;
+      return running;
+    });
+  });
+  const maxValue = Math.max(...cumulative.flat(), 1);
+  const svg = createSvgElement("svg", {
+    class: "area-svg",
+    viewBox: "0 0 " + width + " " + height,
+    role: "img",
+    "aria-label": "Área acumulada por fecha y serie"
+  });
+
+  [0, 0.5, 1].forEach((ratio) => {
+    const y = top + chartHeight * (1 - ratio);
+    svg.appendChild(createSvgElement("line", {
+      x1: left, y1: y, x2: width - right, y2: y, class: "area-grid-line"
+    }));
+    const label = createSvgElement("text", { x: 4, y: y + 4, class: "area-axis-label" });
+    label.textContent = numberFormatter.format(maxValue * ratio);
+    svg.appendChild(label);
+  });
+
+  series.forEach((name, seriesIndex) => {
+    const values = cumulative[seriesIndex];
+    const points = values.map((value, index) => {
+      const x = dates.length === 1 ? left + chartWidth / 2 : left + (index / (dates.length - 1)) * chartWidth;
+      const y = top + chartHeight - (value / maxValue) * chartHeight;
+      return { x, y };
+    });
+    const linePoints = points.map((point) => point.x + "," + point.y).join(" ");
+    const first = points[0];
+    const last = points[points.length - 1];
+    const fillPoints = first.x + "," + (top + chartHeight) + " " + linePoints + " " + last.x + "," + (top + chartHeight);
+    const color = colors[seriesIndex % colors.length];
+    svg.appendChild(createSvgElement("polygon", {
+      points: fillPoints,
+      fill: color,
+      class: "area-path"
+    }));
+    svg.appendChild(createSvgElement("polyline", {
+      points: linePoints,
+      fill: "none",
+      stroke: color,
+      class: "area-path"
+    }));
+  });
+
+  dates.forEach((date, index) => {
+    const x = dates.length === 1 ? left + chartWidth / 2 : left + (index / (dates.length - 1)) * chartWidth;
+    const label = createSvgElement("text", {
+      x, y: height - 8, class: "area-axis-label", "text-anchor": "middle"
+    });
+    label.textContent = date;
+    svg.appendChild(label);
+  });
+
+  const legend = document.createElement("div");
+  legend.className = "area-legend";
+  series.forEach((name, index) => {
+    const item = document.createElement("span");
+    item.className = "area-legend-item";
+    const dot = document.createElement("span");
+    dot.className = "area-legend-dot";
+    dot.style.backgroundColor = colors[index % colors.length];
+    const label = document.createElement("span");
+    label.textContent = name;
+    item.append(dot, label);
+    legend.appendChild(item);
+  });
+  elements.accumulatedArea.replaceChildren(svg, legend);
+  elements.areaNote.textContent = "Acumulado por Fecha, usando valor de stock de depósito y serie Grupo.";
+}
+
 function renderMetrics(products) {
   const counts = {
     noStock: 0,
@@ -445,6 +562,7 @@ function applyFilters() {
   renderMetrics(state.filtered);
   renderDonut(state.filtered);
   renderGoals(state.filtered);
+  renderAccumulatedArea(state.filtered);
   renderRanking(state.filtered);
   renderTable(state.filtered);
 }
