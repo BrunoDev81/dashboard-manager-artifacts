@@ -1,0 +1,27 @@
+{
+  "dashboardId": "d9c42a0e-4182-4947-8490-e10b4c5116b6",
+  "title": "Resumen ejecutivo de Calidad",
+  "businessArea": "Calidad",
+  "ownerSubject": "mock-admin",
+  "currentVersionId": "f3f44810-3e72-4d7f-8a6a-cdc9f5911535",
+  "currentVersionLabel": "github-20260716183217",
+  "publishedAt": "2026-07-16T18:32:20.1149778Z",
+  "publishedBy": "mock-admin",
+  "manifest": {
+    "name": "Dashboard en blanco",
+    "description": "Base corporativa para iniciar un dashboard con datos controlados por Dashboard Manager.",
+    "entrypoint": "index.html",
+    "version": "1.0.0",
+    "requiresApi": true,
+    "visualIdentity": "GRUPO_DISAL_LOCKED",
+    "allowedDataSources": [],
+    "editableStateKeys": [],
+    "staticDataFiles": [],
+    "source": {
+      "type": "GITHUB_WORKSPACE",
+      "repository": "BrunoDev81/dashboard-manager-artifacts",
+      "branch": "main",
+      "path": "dashboard-manager-artifacts/dashboards/calidad/resumen-ejecutivo-de-calidad"
+    }
+  }
+}
