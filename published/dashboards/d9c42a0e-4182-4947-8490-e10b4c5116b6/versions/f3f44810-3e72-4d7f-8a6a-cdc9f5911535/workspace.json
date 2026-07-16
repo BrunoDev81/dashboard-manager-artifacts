@@ -1,0 +1,15 @@
+{
+  "dashboardId": "d9c42a0e-4182-4947-8490-e10b4c5116b6",
+  "dashboardTitle": "Resumen ejecutivo de Calidad",
+  "businessArea": "Calidad",
+  "templateKey": "blank-dashboard",
+  "createdBy": "mock-admin",
+  "createdAt": "2026-07-16T18:31:17.247127Z",
+  "allowedDataSources": [],
+  "editableStateKeys": [],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
