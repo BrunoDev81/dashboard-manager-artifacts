@@ -1,0 +1,27 @@
+{
+  "dashboardId": "2f1d97b5-3bf1-4d4b-bf6d-a4e486634004",
+  "title": "1",
+  "businessArea": "1",
+  "ownerSubject": "mock-admin",
+  "currentVersionId": "a4d299d1-b057-456e-b5b8-a8641c12ebee",
+  "currentVersionLabel": "github-20260717135729",
+  "publishedAt": "2026-07-17T13:57:31.4547634Z",
+  "publishedBy": "mock-admin",
+  "manifest": {
+    "name": "Dashboard en blanco",
+    "description": "Base corporativa para iniciar un dashboard con datos controlados por Dashboard Manager.",
+    "entrypoint": "index.html",
+    "version": "1.0.0",
+    "requiresApi": true,
+    "visualIdentity": "GRUPO_DISAL_LOCKED",
+    "allowedDataSources": [],
+    "editableStateKeys": [],
+    "staticDataFiles": [],
+    "source": {
+      "type": "GITHUB_WORKSPACE",
+      "repository": "BrunoDev81/dashboard-manager-artifacts",
+      "branch": "main",
+      "path": "dashboard-manager-artifacts/dashboards/1"
+    }
+  }
+}
