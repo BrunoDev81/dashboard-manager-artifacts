@@ -1,0 +1,15 @@
+{
+  "dashboardId": "2f1d97b5-3bf1-4d4b-bf6d-a4e486634004",
+  "dashboardTitle": "1",
+  "businessArea": "1",
+  "templateKey": "blank-dashboard",
+  "createdBy": "mock-admin",
+  "createdAt": "2026-07-17T12:45:31.6453343Z",
+  "allowedDataSources": [],
+  "editableStateKeys": [],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
