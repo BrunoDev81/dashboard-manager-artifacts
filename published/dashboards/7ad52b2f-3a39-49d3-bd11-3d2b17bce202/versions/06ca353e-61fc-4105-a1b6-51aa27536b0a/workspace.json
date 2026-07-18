@@ -1,0 +1,15 @@
+{
+  "dashboardId": "7ad52b2f-3a39-49d3-bd11-3d2b17bce202",
+  "dashboardTitle": "Ranking de productos pedidos",
+  "businessArea": "Deposito",
+  "templateKey": "blank-dashboard",
+  "createdBy": "mock-admin",
+  "createdAt": "2026-07-18T17:31:45.9302825Z",
+  "allowedDataSources": [],
+  "editableStateKeys": [],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE"
+  }
+}
