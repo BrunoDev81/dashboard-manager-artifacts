@@ -1,0 +1,27 @@
+{
+  "dashboardId": "7ad52b2f-3a39-49d3-bd11-3d2b17bce202",
+  "title": "Ranking de productos pedidos",
+  "businessArea": "Deposito",
+  "ownerSubject": "mock-admin",
+  "currentVersionId": "06ca353e-61fc-4105-a1b6-51aa27536b0a",
+  "currentVersionLabel": "github-20260718173235",
+  "publishedAt": "2026-07-18T17:32:37.277094Z",
+  "publishedBy": "mock-admin",
+  "manifest": {
+    "name": "Dashboard en blanco",
+    "description": "Base corporativa para iniciar un dashboard con datos controlados por Dashboard Manager.",
+    "entrypoint": "index.html",
+    "version": "1.0.0",
+    "requiresApi": true,
+    "visualIdentity": "GRUPO_DISAL_LOCKED",
+    "allowedDataSources": [],
+    "editableStateKeys": [],
+    "staticDataFiles": [],
+    "source": {
+      "type": "GITHUB_WORKSPACE",
+      "repository": "BrunoDev81/dashboard-manager-artifacts",
+      "branch": "main",
+      "path": "dashboard-manager-artifacts/dashboards/deposito/ranking-de-productos-pedidos"
+    }
+  }
+}
