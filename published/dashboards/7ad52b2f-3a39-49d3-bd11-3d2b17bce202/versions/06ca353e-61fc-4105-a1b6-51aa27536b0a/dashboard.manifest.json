@@ -1,0 +1,17 @@
+{
+  "name": "Dashboard en blanco",
+  "description": "Base corporativa para iniciar un dashboard con datos controlados por Dashboard Manager.",
+  "entrypoint": "index.html",
+  "version": "1.0.0",
+  "requiresApi": true,
+  "visualIdentity": "GRUPO_DISAL_LOCKED",
+  "allowedDataSources": [],
+  "editableStateKeys": [],
+  "staticDataFiles": [],
+  "source": {
+    "type": "GITHUB_WORKSPACE",
+    "repository": "BrunoDev81/dashboard-manager-artifacts",
+    "branch": "main",
+    "path": "dashboard-manager-artifacts/dashboards/deposito/ranking-de-productos-pedidos"
+  }
+}
