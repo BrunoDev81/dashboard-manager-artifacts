@@ -1,0 +1,24 @@
+{
+  "dashboardId": "783c845f-9c06-42d6-a308-c94d83a2d467",
+  "dashboardTitle": "Mix de Productos",
+  "businessArea": "1",
+  "templateKey": "product-mix-analysis",
+  "createdBy": "mock-admin",
+  "createdAt": "2026-07-20T22:13:19.2321848Z",
+  "allowedDataSources": [
+    "productos_catalogo",
+    "ventas_mensuales"
+  ],
+  "editableStateKeys": [
+    "comentarios",
+    "acciones_mix",
+    "simulaciones"
+  ],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "preparationStatus": "PENDING_CODEX_BUILD",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE",
+    "publicationAllowed": false
+  }
+}

@@ -1,0 +1,35 @@
+﻿<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mix de Productos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell layout-portfolio-mix">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">COMERCIAL Â· portfolio-mix</p>
+        <h1>Mix de Productos</h1>
+        <p>Dashboard para analizar participacion, concentracion y evolucion del mix de productos.</p>
+      </div>
+      <div class="hero-metric"><span>Preview seguro</span><strong id="updatedAt">--</strong></div>
+    </header>
+    <section id="notice" class="notice hidden"></section>
+    <section id="loading" class="state">Cargando informacion...</section>
+    <section id="error" class="state error hidden">No pudimos cargar el dashboard.</section>
+    <section id="content" class="hidden">
+      <div id="kpis" class="kpi-grid"></div>
+      <section id="visuals" class="visual-grid"></section>
+      <section class="analysis-grid">
+        <div class="panel"><div class="panel-head"><h2>Analisis principal</h2><input id="filterInput" type="search" placeholder="Buscar"></div><div id="tableWrap"></div></div>
+        <aside class="panel"><h2>Insights y alertas</h2><div id="insights"></div></aside>
+      </section>
+      <section class="panel actions-panel"><h2 id="editableTitle">Comentarios y acciones</h2><textarea id="commentInput" rows="4" placeholder="Registrar comentario o accion"></textarea><div class="actions-row"><button id="saveButton" type="button">Guardar</button><span id="saveStatus"></span></div></section>
+    </section>
+  </main>
+  <script src="/dashboard-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "Mix de Productos",
+  "description": "Dashboard para analizar participacion, concentracion y evolucion del mix de productos.",
+  "entrypoint": "index.html",
+  "version": "1.0.0",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "productos_catalogo",
+    "ventas_mensuales"
+  ],
+  "editableStateKeys": [
+    "comentarios",
+    "acciones_mix",
+    "simulaciones"
+  ],
+  "source": {
+    "type": "GITHUB_WORKSPACE",
+    "repository": "BrunoDev81/dashboard-manager-artifacts",
+    "branch": "main",
+    "path": "dashboard-manager-artifacts/dashboards/1/mix-de-productos"
+  },
+  "visualIdentity": "GRUPO_DISAL_LOCKED"
+}
