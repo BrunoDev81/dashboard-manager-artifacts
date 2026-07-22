@@ -1,0 +1,24 @@
+﻿{
+  "dashboardId": "141181fb-dd0e-4f5d-9254-822de6dc934e",
+  "dashboardTitle": "Top 100 productos m\u00E1s vendidos",
+  "businessArea": "Comercial",
+  "templateKey": "sales-performance",
+  "createdBy": "mock-admin",
+  "createdAt": "2026-07-22T12:15:58.8199655Z",
+  "allowedDataSources": [
+    "productos_catalogo",
+    "pedidos"
+  ],
+  "editableStateKeys": [
+    "comentarios",
+    "acciones",
+    "metas"
+  ],
+  "staticDataFiles": [],
+  "version": "1.0.0",
+  "preparationStatus": "READY_FOR_IMPORT",
+  "dashboardManager": {
+    "sourceType": "GITHUB_WORKSPACE",
+    "publicationAllowed": true
+  }
+}
