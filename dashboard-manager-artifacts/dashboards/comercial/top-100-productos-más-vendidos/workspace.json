@@ -17,6 +17,7 @@
   "staticDataFiles": [],
   "version": "1.0.0",
   "preparationStatus": "READY_FOR_IMPORT",
+  "validatedBy": "Codex",
   "dashboardManager": {
     "sourceType": "GITHUB_WORKSPACE",
     "publicationAllowed": true
