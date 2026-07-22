@@ -1,0 +1,29 @@
+{
+  "dashboardId": "141181fb-dd0e-4f5d-9254-822de6dc934e",
+  "title": "Top 100 productos m\u00E1s vendidos",
+  "businessArea": "Comercial",
+  "ownerSubject": "mock-admin",
+  "currentVersionId": "6c6c5ad5-04f2-4dc0-bda7-7b5b653254ff",
+  "currentVersionLabel": "1.0.0-codex-3",
+  "publishedAt": "2026-07-22T15:09:27.707792Z",
+  "publishedBy": "mock-admin",
+  "manifest": {
+    "name": "Top 100 productos m\u00E1s vendidos",
+    "version": "1.0.0",
+    "entrypoint": "index.html",
+    "description": "Identificar los 100 productos con mayor volumen pedido durante el a\u00F1o actual.",
+    "requiresApi": true,
+    "visualIdentity": "GRUPO_DISAL_LOCKED",
+    "approvedWidgets": [],
+    "staticDataFiles": [],
+    "editableStateKeys": [
+      "comentarios",
+      "acciones",
+      "metas"
+    ],
+    "allowedDataSources": [
+      "productos_catalogo",
+      "pedidos"
+    ]
+  }
+}
