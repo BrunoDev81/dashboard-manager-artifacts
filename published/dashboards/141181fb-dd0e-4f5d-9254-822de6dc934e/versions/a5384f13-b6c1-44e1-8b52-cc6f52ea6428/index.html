@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Top 100 productos más vendidos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <div class="brand-block">
+        <img class="brand" src="/disal_logo_informe.png" alt="Grupo Disal">
+        <p class="eyebrow">Comercial · Análisis del año actual</p>
+        <h1>Top 100 productos más vendidos</h1>
+        <p class="hero-copy">Productos con mayor volumen pedido, medido por la suma de litros pedidos.</p>
+      </div>
+      <div class="period-card" aria-label="Período analizado">
+        <span>Período obligatorio</span>
+        <strong id="currentYear">—</strong>
+        <small>Año actual</small>
+      </div>
+    </header>
+
+    <section class="filters-panel hidden" aria-label="Filtros del dashboard" aria-hidden="true">
+      <div class="filter-copy">
+        <span class="section-kicker">Filtros</span>
+        <strong>Refiná el ranking completo</strong>
+      </div>
+      <label>
+        Año
+        <select id="yearFilter" disabled>
+          <option>Año actual</option>
+        </select>
+      </label>
+      <label>
+        Rubro
+        <select id="rubroFilter" disabled>
+          <option value="">Todos los rubros</option>
+        </select>
+      </label>
+      <button id="retryButton" class="secondary-button hidden" type="button">Reintentar carga</button>
+    </section>
+
+    <section id="loadingState" class="state-card" role="status" aria-live="polite">
+      <span class="loader" aria-hidden="true"></span>
+      <div>
+        <strong>Cargando pedidos y catálogo de productos…</strong>
+        <p>Estamos preparando el ranking con los datos autorizados.</p>
+      </div>
+    </section>
+
+    <section id="errorState" class="state-card state-error hidden" role="alert">
+      <div>
+        <strong>No pudimos cargar la información.</strong>
+        <p id="errorMessage">Revisá la disponibilidad del Dashboard Manager SDK e intentá nuevamente.</p>
+      </div>
+    </section>
+
+    <section id="emptyState" class="state-card hidden" role="status">
+      <div>
+        <strong>No hay resultados para los filtros seleccionados.</strong>
+        <p>Probá con todos los rubros. El año actual se mantiene como condición obligatoria.</p>
+      </div>
+    </section>
+
+    <section id="dashboardContent" class="dashboard-content hidden">
+      <section class="summary-grid" aria-label="Resumen del resultado">
+        <article class="summary-card">
+          <span>Litros pedidos</span>
+          <strong id="totalLiters">0</strong>
+          <small>Suma del resultado filtrado</small>
+        </article>
+        <article class="summary-card">
+          <span>Productos encontrados</span>
+          <strong id="productCount">0</strong>
+          <small id="productCountDetail">Antes del límite del Top 100</small>
+        </article>
+        <article class="summary-card">
+          <span>Producto líder</span>
+          <strong id="leaderName" class="summary-text">—</strong>
+          <small id="leaderLiters">Sin volumen</small>
+        </article>
+      </section>
+
+      <section class="panel ranking-panel hidden" aria-hidden="true">
+        <div class="panel-heading">
+          <div>
+            <span class="section-kicker">Visual principal</span>
+            <h2>Ranking por litros pedidos</h2>
+            <p>Orden descendente, limitado a los primeros 100 productos después de aplicar los filtros.</p>
+          </div>
+          <span id="rankingCount" class="result-badge">0 productos</span>
+        </div>
+        <div id="ranking" class="ranking" aria-label="Ranking horizontal de productos"></div>
+      </section>
+
+      <section class="panel detail-panel">
+        <div class="panel-heading detail-heading">
+          <div>
+            <span class="section-kicker">Detalle verificable</span>
+            <h2>Tabla analítica</h2>
+            <p>El detalle utiliza el mismo resultado agregado que el ranking.</p>
+          </div>
+          <div class="table-tools">
+            <label>
+              Buscar producto o rubro
+              <input id="searchInput" type="search" placeholder="Ingresá un término" autocomplete="off">
+            </label>
+            <label>
+              Ordenar por
+              <select id="sortField">
+                <option value="position">Posición</option>
+                <option value="product">Producto</option>
+                <option value="rubro">Rubro</option>
+                <option value="liters">Litros pedidos</option>
+              </select>
+            </label>
+            <label>
+              Dirección
+              <select id="sortDirection">
+                <option value="asc">Ascendente</option>
+                <option value="desc">Descendente</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Posición</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Rubro</th>
+                <th scope="col">Período</th>
+                <th scope="col" class="numeric">Litros pedidos</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <p id="tableEmpty" class="table-empty hidden">No hay filas que coincidan con la búsqueda.</p>
+      </section>
+
+      <section class="quality-note" aria-live="polite">
+        <div>
+          <span class="section-kicker">Trazabilidad de datos</span>
+          <strong>Controles aplicados al cruce</strong>
+        </div>
+        <p id="qualitySummary">—</p>
+      </section>
+    </section>
+  </main>
+
+  <script src="dashboard-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
