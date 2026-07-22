@@ -1,4 +1,4 @@
-{
+﻿{
   "dashboardId": "141181fb-dd0e-4f5d-9254-822de6dc934e",
   "dashboardTitle": "Top 100 productos m\u00E1s vendidos",
   "businessArea": "Comercial",
@@ -16,9 +16,9 @@
   ],
   "staticDataFiles": [],
   "version": "1.0.0",
-  "preparationStatus": "PENDING_CODEX_BUILD",
+  "preparationStatus": "READY_FOR_IMPORT",
   "dashboardManager": {
     "sourceType": "GITHUB_WORKSPACE",
-    "publicationAllowed": false
+    "publicationAllowed": true
   }
 }
