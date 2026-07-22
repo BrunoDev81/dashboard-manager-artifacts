@@ -3,27 +3,32 @@
   "title": "Top 100 productos m\u00E1s vendidos",
   "businessArea": "Comercial",
   "ownerSubject": "mock-admin",
-  "currentVersionId": "6c6c5ad5-04f2-4dc0-bda7-7b5b653254ff",
-  "currentVersionLabel": "1.0.0-codex-3",
-  "publishedAt": "2026-07-22T15:09:27.707792Z",
+  "currentVersionId": "85c184ef-bdcb-48c2-b289-798b704fe377",
+  "currentVersionLabel": "github-20260722160549",
+  "publishedAt": "2026-07-22T16:05:52.4795545Z",
   "publishedBy": "mock-admin",
   "manifest": {
     "name": "Top 100 productos m\u00E1s vendidos",
-    "version": "1.0.0",
-    "entrypoint": "index.html",
     "description": "Identificar los 100 productos con mayor volumen pedido durante el a\u00F1o actual.",
+    "entrypoint": "index.html",
+    "version": "1.0.0",
     "requiresApi": true,
-    "visualIdentity": "GRUPO_DISAL_LOCKED",
-    "approvedWidgets": [],
-    "staticDataFiles": [],
+    "allowedDataSources": [
+      "productos_catalogo",
+      "pedidos"
+    ],
     "editableStateKeys": [
       "comentarios",
       "acciones",
       "metas"
     ],
-    "allowedDataSources": [
-      "productos_catalogo",
-      "pedidos"
-    ]
+    "staticDataFiles": [],
+    "source": {
+      "type": "GITHUB_WORKSPACE",
+      "repository": "BrunoDev81/dashboard-manager-artifacts",
+      "branch": "main",
+      "path": "dashboard-manager-artifacts/dashboards/comercial/top-100-productos-m\u00E1s-vendidos"
+    },
+    "visualIdentity": "GRUPO_DISAL_LOCKED"
   }
 }
