@@ -1,8 +1,8 @@
 {
   "name": "Top 100 productos más vendidos",
-  "description": "Identificar los 100 productos con mayor volumen pedido durante el año actual.",
+  "description": "Identificar los 100 productos con mayor volumen pedido durante 2026.",
   "entrypoint": "index.html",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "requiresApi": true,
   "allowedDataSources": [
     "productos_catalogo",

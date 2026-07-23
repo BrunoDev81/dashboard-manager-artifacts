@@ -3,156 +3,136 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Top 100 de productos por litros pedidos durante 2026.">
   <title>Top 100 productos más vendidos</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app-shell">
-    <header class="hero">
-      <div class="brand-block">
-        <img class="brand" src="/disal_logo_informe.png" alt="Grupo Disal">
-        <p class="eyebrow">Comercial · Análisis del año actual</p>
-        <h1>Top 100 productos más vendidos</h1>
-        <p class="hero-copy">Productos con mayor volumen pedido, medido por la suma de litros pedidos.</p>
-      </div>
-      <div class="period-card" aria-label="Período analizado">
-        <span>Período obligatorio</span>
-        <strong id="currentYear">—</strong>
-        <small>Año actual</small>
-      </div>
-    </header>
+  <a class="skip-link" href="#mainContent">Ir al contenido principal</a>
 
-    <section class="filters-panel hidden" aria-label="Filtros del dashboard" aria-hidden="true">
-      <div class="filter-copy">
-        <span class="section-kicker">Filtros</span>
-        <strong>Refiná el ranking completo</strong>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <img class="brand-logo" src="/disal_logo_informe.png" alt="Grupo Disal">
+        <span class="area-label">COMERCIAL</span>
       </div>
-      <label>
-        Año
-        <select id="yearFilter" disabled>
-          <option>Año actual</option>
-        </select>
-      </label>
-      <label>
-        Rubro
-        <select id="rubroFilter" disabled>
-          <option value="">Todos los rubros</option>
-        </select>
-      </label>
-      <button id="retryButton" class="secondary-button hidden" type="button">Reintentar carga</button>
+      <div class="period-badge" aria-label="Período del informe">
+        <span>Período</span>
+        <strong>2026</strong>
+      </div>
+    </div>
+  </header>
+
+  <main id="mainContent" class="page-shell">
+    <section class="hero" aria-labelledby="pageTitle">
+      <div>
+        <p class="eyebrow">ANÁLISIS DE VOLUMEN PEDIDO</p>
+        <h1 id="pageTitle">Top 100 productos más vendidos</h1>
+        <p class="hero-copy">Una lectura verificable de los productos con mayor volumen pedido durante 2026, medida en litros.</p>
+      </div>
+      <div class="connection-card" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <div>
+          <strong id="connectionStatus">Preparando información</strong>
+          <span id="updatedAt">Actualización pendiente</span>
+        </div>
+      </div>
     </section>
 
-    <section id="loadingState" class="state-card" role="status" aria-live="polite">
-      <span class="loader" aria-hidden="true"></span>
+    <section id="loadingState" class="state-card" aria-live="polite" aria-busy="true">
+      <div class="loader" aria-hidden="true"></div>
       <div>
-        <strong>Cargando pedidos y catálogo de productos…</strong>
-        <p>Estamos preparando el ranking con los datos autorizados.</p>
+        <strong>Estamos consolidando el Top 100</strong>
+        <p>Procesamos los pedidos autorizados y completamos el rubro desde el catálogo.</p>
       </div>
     </section>
 
     <section id="errorState" class="state-card state-error hidden" role="alert">
+      <div class="state-icon" aria-hidden="true">!</div>
       <div>
-        <strong>No pudimos cargar la información.</strong>
-        <p id="errorMessage">Revisá la disponibilidad del Dashboard Manager SDK e intentá nuevamente.</p>
+        <strong>No pudimos cargar la información</strong>
+        <p id="errorMessage">Reintentá la operación.</p>
+        <button id="retryButton" class="button button-primary" type="button">Reintentar carga</button>
       </div>
     </section>
 
-    <section id="emptyState" class="state-card hidden" role="status">
+    <section id="emptyState" class="state-card hidden" aria-live="polite">
+      <div class="state-icon state-icon-empty" aria-hidden="true">0</div>
       <div>
-        <strong>No hay resultados para los filtros seleccionados.</strong>
-        <p>Probá con todos los rubros. El año actual se mantiene como condición obligatoria.</p>
+        <strong>No hay pedidos para 2026</strong>
+        <p>La consulta respondió correctamente, pero no encontramos productos con litros pedidos válidos para el período.</p>
       </div>
     </section>
 
-    <section id="dashboardContent" class="dashboard-content hidden">
-      <section class="summary-grid" aria-label="Resumen del resultado">
-        <article class="summary-card">
-          <span>Litros pedidos</span>
-          <strong id="totalLiters">0</strong>
-          <small>Suma del resultado filtrado</small>
-        </article>
-        <article class="summary-card">
-          <span>Productos encontrados</span>
-          <strong id="productCount">0</strong>
-          <small id="productCountDetail">Antes del límite del Top 100</small>
-        </article>
-        <article class="summary-card">
-          <span>Producto líder</span>
-          <strong id="leaderName" class="summary-text">—</strong>
-          <small id="leaderLiters">Sin volumen</small>
-        </article>
+    <div id="dashboardContent" class="dashboard-content hidden">
+      <section aria-labelledby="summaryTitle">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">RESUMEN DEL PERÍODO</p>
+            <h2 id="summaryTitle">Indicadores clave</h2>
+          </div>
+          <p class="section-note">Cálculos sobre todos los pedidos válidos de 2026.</p>
+        </div>
+        <div id="kpiGrid" class="kpi-grid" data-widget="kpi-cards"></div>
       </section>
 
-      <section class="panel ranking-panel hidden" aria-hidden="true">
-        <div class="panel-heading">
+      <section class="table-card" aria-labelledby="tableTitle" data-widget="data-table">
+        <div class="table-header">
           <div>
-            <span class="section-kicker">Visual principal</span>
-            <h2>Ranking por litros pedidos</h2>
-            <p>Orden descendente, limitado a los primeros 100 productos después de aplicar los filtros.</p>
+            <p class="section-kicker">DETALLE ANALÍTICO</p>
+            <h2 id="tableTitle">Top 100 consolidado</h2>
+            <p id="tableSummary" class="table-summary">Ordenado por litros pedidos, de mayor a menor.</p>
           </div>
-          <span id="rankingCount" class="result-badge">0 productos</span>
+          <label class="search-control" for="tableSearch">
+            <span>Buscar en el Top 100</span>
+            <input id="tableSearch" type="search" placeholder="Producto o rubro" autocomplete="off">
+          </label>
         </div>
-        <div id="ranking" class="ranking" aria-label="Ranking horizontal de productos"></div>
-      </section>
 
-      <section class="panel detail-panel">
-        <div class="panel-heading detail-heading">
-          <div>
-            <span class="section-kicker">Detalle verificable</span>
-            <h2>Tabla analítica</h2>
-            <p>El detalle utiliza el mismo resultado agregado que el ranking.</p>
-          </div>
-          <div class="table-tools">
-            <label>
-              Buscar producto o rubro
-              <input id="searchInput" type="search" placeholder="Ingresá un término" autocomplete="off">
-            </label>
-            <label>
-              Ordenar por
-              <select id="sortField">
-                <option value="position">Posición</option>
-                <option value="product">Producto</option>
-                <option value="rubro">Rubro</option>
-                <option value="liters">Litros pedidos</option>
-              </select>
-            </label>
-            <label>
-              Dirección
-              <select id="sortDirection">
-                <option value="asc">Ascendente</option>
-                <option value="desc">Descendente</option>
-              </select>
-            </label>
-          </div>
+        <div id="searchEmpty" class="inline-empty hidden" role="status">
+          <strong>Sin coincidencias</strong>
+          <span>Probá con otro producto o rubro.</span>
         </div>
-        <div class="table-scroll">
+
+        <div id="tableWrap" class="table-wrap" tabindex="0" aria-label="Tabla del Top 100 productos">
           <table>
             <thead>
               <tr>
-                <th scope="col">Posición</th>
-                <th scope="col">Producto</th>
-                <th scope="col">Rubro</th>
-                <th scope="col">Período</th>
-                <th scope="col" class="numeric">Litros pedidos</th>
+                <th scope="col" class="rank-column">Posición</th>
+                <th scope="col"><button class="sort-button" type="button" data-sort="producto">Producto <span aria-hidden="true">↕</span></button></th>
+                <th scope="col"><button class="sort-button" type="button" data-sort="rubro">Rubro <span aria-hidden="true">↕</span></button></th>
+                <th scope="col">Fecha Id</th>
+                <th scope="col" class="numeric"><button class="sort-button numeric" type="button" data-sort="litros">Litros pedidos <span aria-hidden="true">↓</span></button></th>
+                <th scope="col" class="numeric"><button class="sort-button numeric" type="button" data-sort="participacion">Participación <span aria-hidden="true">↕</span></button></th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
           </table>
         </div>
-        <p id="tableEmpty" class="table-empty hidden">No hay filas que coincidan con la búsqueda.</p>
+        <div class="table-footer">
+          <span id="visibleCount">0 productos</span>
+          <span>La posición conserva el orden original por volumen.</span>
+        </div>
       </section>
 
-      <section class="quality-note" aria-live="polite">
+      <aside class="trace-card" aria-labelledby="traceTitle">
+        <div class="trace-icon" aria-hidden="true">✓</div>
         <div>
-          <span class="section-kicker">Trazabilidad de datos</span>
-          <strong>Controles aplicados al cruce</strong>
+          <p class="section-kicker">TRAZABILIDAD DE DATOS</p>
+          <h2 id="traceTitle">Controles aplicados al cruce</h2>
+          <p id="traceSummary">Validación pendiente.</p>
+          <ul id="traceList" class="trace-list"></ul>
         </div>
-        <p id="qualitySummary">—</p>
-      </section>
-    </section>
+      </aside>
+    </div>
   </main>
 
-  <script src="dashboard-sdk.js"></script>
+  <footer class="app-footer">
+    <span>GRUPO DISAL · Información comercial autorizada</span>
+    <span>Versión 1.0.1</span>
+  </footer>
+
+  <script src="/dashboard-sdk.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

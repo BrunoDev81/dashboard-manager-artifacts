@@ -1,428 +1,375 @@
-(() => {
+(function () {
   "use strict";
 
-  const DATASETS = Object.freeze({
-    products: "productos_catalogo",
-    orders: "pedidos"
+  const REPORT_YEAR = 2026;
+  const CONTRACT = Object.freeze({
+    datasets: Object.freeze({ catalog: "productos_catalogo", orders: "pedidos" }),
+    editableStateKeys: Object.freeze(["comentarios", "acciones", "metas"])
   });
 
-  const currentYear = new Date().getFullYear();
-  const elements = {
-    currentYear: document.getElementById("currentYear"),
-    yearFilter: document.getElementById("yearFilter"),
-    rubroFilter: document.getElementById("rubroFilter"),
-    retryButton: document.getElementById("retryButton"),
-    loadingState: document.getElementById("loadingState"),
-    errorState: document.getElementById("errorState"),
-    errorMessage: document.getElementById("errorMessage"),
-    emptyState: document.getElementById("emptyState"),
-    dashboardContent: document.getElementById("dashboardContent"),
-    totalLiters: document.getElementById("totalLiters"),
-    productCount: document.getElementById("productCount"),
-    productCountDetail: document.getElementById("productCountDetail"),
-    leaderName: document.getElementById("leaderName"),
-    leaderLiters: document.getElementById("leaderLiters"),
-    rankingCount: document.getElementById("rankingCount"),
-    ranking: document.getElementById("ranking"),
-    searchInput: document.getElementById("searchInput"),
-    sortField: document.getElementById("sortField"),
-    sortDirection: document.getElementById("sortDirection"),
-    tableBody: document.getElementById("tableBody"),
-    tableEmpty: document.getElementById("tableEmpty"),
-    qualitySummary: document.getElementById("qualitySummary")
-  };
-
-  const state = {
-    preparedOrders: [],
-    topRows: [],
+  const model = {
+    ranking: [],
+    annualLiters: 0,
+    annualProducts: 0,
+    sort: { field: "litros", direction: "desc" },
     quality: null
   };
 
-  const litersFormatter = new Intl.NumberFormat("es-AR", {
-    maximumFractionDigits: 2
-  });
+  const numberFormat = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+  const decimalFormat = new Intl.NumberFormat("es-AR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const dateTimeFormat = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short" });
 
-  function setVisible(element, visible) {
-    element.classList.toggle("hidden", !visible);
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function sdk() {
+    return window.DashboardManager || null;
   }
 
   function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+    return String(value === undefined || value === null ? "" : value).replace(/[&<>"']/g, function (character) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[character];
+    });
   }
 
   function normalizeText(value) {
-    return String(value ?? "")
+    return String(value === undefined || value === null ? "" : value)
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
-      .trim()
       .replace(/\s+/g, " ")
+      .trim()
       .toLocaleLowerCase("es-AR");
   }
 
-  function extractRows(response) {
-    if (Array.isArray(response)) return response;
-    if (Array.isArray(response?.rows)) return response.rows;
-    if (Array.isArray(response?.data)) return response.data;
-    if (Array.isArray(response?.items)) return response.items;
-    return [];
+  function displayText(value, fallback) {
+    const text = String(value === undefined || value === null ? "" : value).replace(/\s+/g, " ").trim();
+    return text || fallback;
   }
 
-  function parseYear(value) {
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
-      return value.getFullYear();
-    }
-
-    const text = String(value ?? "").trim();
-    if (!text) return null;
-
-    const leadingYear = text.match(/^(19\d{2}|20\d{2}|21\d{2})(?:\D|\d{4})/);
-    if (leadingYear) return Number(leadingYear[1]);
-
-    const dayFirst = text.match(/^\d{1,2}[\/-]\d{1,2}[\/-](19\d{2}|20\d{2}|21\d{2})$/);
-    if (dayFirst) return Number(dayFirst[1]);
-
-    if (/^(19\d{2}|20\d{2}|21\d{2})$/.test(text)) return Number(text);
-    return null;
-  }
-
-  function orderYear(order) {
-    const fechaYear = parseYear(order?.fecha_id);
-    return fechaYear ?? parseYear(order?.source_year);
-  }
-
-  function parseLiters(value) {
+  function parseNumber(value) {
     if (typeof value === "number") return Number.isFinite(value) ? value : null;
-
-    let text = String(value ?? "").trim().replace(/\s/g, "");
+    if (value === undefined || value === null || value === "") return null;
+    let text = String(value).trim().replace(/\s/g, "");
     if (!text) return null;
-
-    if (text.includes(",") && text.includes(".")) {
-      if (text.lastIndexOf(",") > text.lastIndexOf(".")) {
-        text = text.replaceAll(".", "").replace(",", ".");
-      } else {
-        text = text.replaceAll(",", "");
-      }
-    } else if (text.includes(",")) {
+    const lastComma = text.lastIndexOf(",");
+    const lastDot = text.lastIndexOf(".");
+    if (lastComma > lastDot) {
+      text = text.replace(/\./g, "").replace(",", ".");
+    } else if (lastDot > lastComma && lastComma >= 0) {
+      text = text.replace(/,/g, "");
+    } else if (lastComma >= 0) {
       text = text.replace(",", ".");
     }
-
     const parsed = Number(text);
     return Number.isFinite(parsed) ? parsed : null;
   }
 
-  function createCatalogIndex(products) {
-    const grouped = new Map();
-    let rowsWithoutProduct = 0;
-
-    products.forEach((row) => {
-      const key = normalizeText(row?.producto);
-      if (!key) {
-        rowsWithoutProduct += 1;
-        return;
-      }
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key).push(row);
-    });
-
-    const index = new Map();
-    let duplicateKeys = 0;
-    let ambiguousKeys = 0;
-
-    grouped.forEach((rows, key) => {
-      if (rows.length > 1) {
-        duplicateKeys += 1;
-        ambiguousKeys += 1;
-        index.set(key, { status: "ambiguous", rubro: null });
-        return;
-      }
-
-      const rubro = String(rows[0]?.rubro ?? "").trim() || null;
-      index.set(key, { status: "matched", rubro });
-    });
-
-    return { index, duplicateKeys, ambiguousKeys, rowsWithoutProduct };
+  function parseYear(row) {
+    const sourceYear = Number.parseInt(row && row.source_year, 10);
+    if (Number.isFinite(sourceYear)) return sourceYear;
+    const rawDate = String(row && row.fecha_id !== undefined ? row.fecha_id : "").trim();
+    const match = rawDate.match(/(?:^|\D)(20\d{2})(?:\D|$)/);
+    if (match) return Number.parseInt(match[1], 10);
+    if (/^\d{8}$/.test(rawDate)) return Number.parseInt(rawDate.slice(0, 4), 10);
+    return null;
   }
 
-  function prepareOrders(orders, catalog) {
+  function unwrapRows(result, datasetName) {
+    if (Array.isArray(result)) return result;
+    const candidates = [
+      result && result.rows,
+      result && result.data,
+      result && result.items,
+      result && result.records,
+      result && result.payload,
+      result && result.data && result.data.rows,
+      result && result.data && result.data.items,
+      result && result.payload && result.payload.rows,
+      result && result.payload && result.payload.items,
+      result && result.result && result.result.rows,
+      result && result.result && result.result.data,
+      result && result.dataset && result.dataset.rows
+    ];
+    const rows = candidates.find(Array.isArray);
+    if (rows) return rows;
+    throw new Error("El dataset " + datasetName + " respondió con un formato no reconocido.");
+  }
+
+  async function getAllRows(datasetName) {
+    const manager = sdk();
+    if (!manager || typeof manager.getDataset !== "function") {
+      throw new Error("Dashboard Manager SDK no está disponible en este entorno.");
+    }
+    return unwrapRows(await manager.getDataset(datasetName), datasetName);
+  }
+
+  function buildCatalogIndex(rows) {
+    const index = new Map();
+    let missingProduct = 0;
+    rows.forEach(function (row) {
+      const key = normalizeText(row && row.producto);
+      if (!key) {
+        missingProduct += 1;
+        return;
+      }
+      if (!index.has(key)) index.set(key, { rows: 0, rubros: new Set() });
+      const entry = index.get(key);
+      entry.rows += 1;
+      const rubro = displayText(row.rubro, "");
+      if (rubro) entry.rubros.add(rubro);
+    });
+    return { index: index, missingProduct: missingProduct };
+  }
+
+  function aggregateOrders(rows) {
+    const groups = new Map();
     const quality = {
-      orderRows: orders.length,
-      currentYearRows: 0,
-      invalidDateRows: 0,
-      invalidLiterRows: 0,
-      rowsWithoutProduct: 0,
-      unmatchedRows: 0,
-      ambiguousOrderRows: 0,
-      catalogDuplicateKeys: catalog.duplicateKeys,
-      catalogAmbiguousKeys: catalog.ambiguousKeys,
-      catalogRowsWithoutProduct: catalog.rowsWithoutProduct
+      orderRows: rows.length,
+      rowsInYear: 0,
+      invalidPeriod: 0,
+      invalidLiters: 0,
+      missingProduct: 0
     };
 
-    const prepared = [];
-
-    orders.forEach((order) => {
-      const year = orderYear(order);
+    rows.forEach(function (row) {
+      const year = parseYear(row);
       if (year === null) {
-        quality.invalidDateRows += 1;
+        quality.invalidPeriod += 1;
         return;
       }
-      if (year !== currentYear) return;
+      if (year !== REPORT_YEAR) return;
+      quality.rowsInYear += 1;
 
-      quality.currentYearRows += 1;
-      const product = String(order?.producto ?? "").trim();
-      const productKey = normalizeText(product);
-      if (!productKey) {
-        quality.rowsWithoutProduct += 1;
-        return;
-      }
-
-      const liters = parseLiters(order?.litros_pedidos);
+      const liters = parseNumber(row.litros_pedidos);
       if (liters === null) {
-        quality.invalidLiterRows += 1;
+        quality.invalidLiters += 1;
         return;
       }
-
-      const catalogEntry = catalog.index.get(productKey);
-      let rubro = null;
-      let relation = "unmatched";
-
-      if (!catalogEntry) {
-        quality.unmatchedRows += 1;
-      } else if (catalogEntry.status === "ambiguous") {
-        relation = "ambiguous";
-        quality.ambiguousOrderRows += 1;
-      } else {
-        relation = "matched";
-        rubro = catalogEntry.rubro;
+      const key = normalizeText(row.producto);
+      if (!key) {
+        quality.missingProduct += 1;
+        return;
       }
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key: key,
+          producto: displayText(row.producto, "Producto sin nombre"),
+          litros: 0
+        });
+      }
+      groups.get(key).litros += liters;
+    });
 
-      prepared.push({
-        product,
-        productKey,
-        liters,
-        rubro,
-        rubroKey: normalizeText(rubro),
-        relation
+    return { groups: Array.from(groups.values()), quality: quality };
+  }
+
+  function joinCatalog(groups, catalog) {
+    let missingMatch = 0;
+    let ambiguous = 0;
+    let duplicatedCatalog = 0;
+    const enriched = groups.map(function (group) {
+      const match = catalog.index.get(group.key);
+      let rubro = "Sin asignar";
+      if (!match) {
+        missingMatch += 1;
+      } else {
+        if (match.rows > 1) duplicatedCatalog += 1;
+        if (match.rubros.size === 1) rubro = Array.from(match.rubros)[0];
+        if (match.rubros.size > 1) ambiguous += 1;
+      }
+      return {
+        producto: group.producto,
+        rubro: rubro,
+        litros: group.litros,
+        fechaId: String(REPORT_YEAR)
+      };
+    });
+    return {
+      rows: enriched,
+      quality: {
+        missingMatch: missingMatch,
+        ambiguous: ambiguous,
+        duplicatedCatalog: duplicatedCatalog,
+        catalogMissingProduct: catalog.missingProduct
+      }
+    };
+  }
+
+  function prepareModel(orderRows, catalogRows) {
+    const aggregated = aggregateOrders(orderRows);
+    const catalog = buildCatalogIndex(catalogRows);
+    const joined = joinCatalog(aggregated.groups, catalog);
+    const allProducts = joined.rows.sort(function (a, b) {
+      return b.litros - a.litros || a.producto.localeCompare(b.producto, "es-AR");
+    });
+    const annualLiters = allProducts.reduce(function (sum, row) { return sum + row.litros; }, 0);
+    const ranking = allProducts.slice(0, 100).map(function (row, index) {
+      return Object.assign({}, row, {
+        posicion: index + 1,
+        participacion: annualLiters ? row.litros / annualLiters * 100 : 0
       });
     });
 
-    return { prepared, quality };
-  }
-
-  function populateRubroFilter() {
-    const previousValue = elements.rubroFilter.value;
-    const rubros = new Map();
-
-    state.preparedOrders.forEach((row) => {
-      if (row.relation === "matched" && row.rubro && !rubros.has(row.rubroKey)) {
-        rubros.set(row.rubroKey, row.rubro);
-      }
+    model.ranking = ranking;
+    model.annualLiters = annualLiters;
+    model.annualProducts = allProducts.length;
+    model.quality = Object.assign({}, aggregated.quality, joined.quality, {
+      catalogRows: catalogRows.length,
+      aggregatedProducts: allProducts.length
     });
-
-    const options = [...rubros.entries()].sort((a, b) =>
-      a[1].localeCompare(b[1], "es-AR", { sensitivity: "base" })
-    );
-
-    elements.rubroFilter.innerHTML = '<option value="">Todos los rubros</option>' + options
-      .map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`)
-      .join("");
-
-    if (rubros.has(previousValue)) elements.rubroFilter.value = previousValue;
-    elements.rubroFilter.disabled = false;
   }
 
-  function aggregateFilteredRows() {
-    const selectedRubro = elements.rubroFilter.value;
-    const grouped = new Map();
+  function kpiCard(label, value, caption, status, tone, productValue) {
+    return '<article class="kpi-card" data-tone="' + escapeHtml(tone) + '">' +
+      '<span class="kpi-label">' + escapeHtml(label) + '</span>' +
+      '<strong class="kpi-value' + (productValue ? ' product-value' : '') + '">' + escapeHtml(value) + '</strong>' +
+      '<span class="kpi-caption">' + escapeHtml(caption) + '</span>' +
+      '<span class="kpi-status">' + escapeHtml(status) + '</span>' +
+      '</article>';
+  }
 
-    state.preparedOrders.forEach((row) => {
-      if (selectedRubro && row.rubroKey !== selectedRubro) return;
+  function renderKpis() {
+    const leader = model.ranking[0];
+    const topTenLiters = model.ranking.slice(0, 10).reduce(function (sum, row) { return sum + row.litros; }, 0);
+    const topTenShare = model.annualLiters ? topTenLiters / model.annualLiters * 100 : 0;
+    byId("kpiGrid").innerHTML = [
+      kpiCard("Litros pedidos", numberFormat.format(model.annualLiters) + " L", "Total válido del período 2026", "Volumen anual", "default", false),
+      kpiCard("Productos con pedidos", numberFormat.format(model.annualProducts), "Productos únicos con volumen válido", "Cobertura anual", "default", false),
+      kpiCard("Producto líder", leader.producto, numberFormat.format(leader.litros) + " litros pedidos", "Posición 1", "positive", true),
+      kpiCard("Concentración Top 10", decimalFormat.format(topTenShare) + "%", "Participación sobre el volumen anual", "Lectura 80/20", "default", false)
+    ].join("");
+  }
 
-      if (!grouped.has(row.productKey)) {
-        grouped.set(row.productKey, {
-          product: row.product,
-          rubro: row.relation === "matched" ? row.rubro : null,
-          liters: 0
-        });
+  function sortedRows(rows) {
+    const field = model.sort.field;
+    const multiplier = model.sort.direction === "asc" ? 1 : -1;
+    return rows.slice().sort(function (a, b) {
+      if (field === "producto" || field === "rubro") {
+        return a[field].localeCompare(b[field], "es-AR") * multiplier;
       }
-
-      const aggregate = grouped.get(row.productKey);
-      aggregate.liters += row.liters;
-      if (!aggregate.rubro && row.relation === "matched") aggregate.rubro = row.rubro;
+      return ((a[field] || 0) - (b[field] || 0)) * multiplier;
     });
-
-    return [...grouped.values()].sort((a, b) =>
-      b.liters - a.liters || a.product.localeCompare(b.product, "es-AR", { sensitivity: "base" })
-    );
   }
 
-  function formatLiters(value) {
-    return `${litersFormatter.format(value)} L`;
+  function filteredRows() {
+    const query = normalizeText(byId("tableSearch").value);
+    const rows = model.ranking.filter(function (row) {
+      return !query || normalizeText(row.producto + " " + row.rubro).includes(query);
+    });
+    return sortedRows(rows);
   }
 
-  function renderRanking(rows) {
-    const maximum = Math.max(0, ...rows.map((row) => row.liters));
-    elements.ranking.innerHTML = rows.map((row, index) => {
-      const width = maximum > 0 ? Math.max(0, (row.liters / maximum) * 100) : 0;
-      return `
-        <div class="ranking-row">
-          <span class="rank-position">${index + 1}</span>
-          <span class="rank-product" title="${escapeHtml(row.product)}">${escapeHtml(row.product)}</span>
-          <span class="rank-track" aria-hidden="true">
-            <span class="rank-bar" style="--bar-width:${width.toFixed(3)}%"></span>
-          </span>
-          <span class="rank-value">${escapeHtml(formatLiters(row.liters))}</span>
-        </div>`;
-    }).join("");
-  }
-
-  function tableComparator(field, direction) {
-    const factor = direction === "desc" ? -1 : 1;
-    return (a, b) => {
-      if (field === "position") return (a.position - b.position) * factor;
-      if (field === "liters") return (a.liters - b.liters) * factor;
-      const left = field === "rubro" ? (a.rubro ?? "") : a.product;
-      const right = field === "rubro" ? (b.rubro ?? "") : b.product;
-      return left.localeCompare(right, "es-AR", { sensitivity: "base" }) * factor;
-    };
+  function updateSortButtons() {
+    document.querySelectorAll(".sort-button").forEach(function (button) {
+      const active = button.dataset.sort === model.sort.field;
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+      const icon = button.querySelector("span");
+      if (icon) icon.textContent = active ? (model.sort.direction === "asc" ? "↑" : "↓") : "↕";
+    });
   }
 
   function renderTable() {
-    const term = normalizeText(elements.searchInput.value);
-    const rows = state.topRows
-      .map((row, index) => ({ ...row, position: index + 1 }))
-      .filter((row) => !term || normalizeText(`${row.product} ${row.rubro ?? ""}`).includes(term))
-      .sort(tableComparator(elements.sortField.value, elements.sortDirection.value));
-
-    elements.tableBody.innerHTML = rows.map((row) => `
-      <tr>
-        <td>${row.position}</td>
-        <td><strong>${escapeHtml(row.product)}</strong></td>
-        <td>${row.rubro ? `<span class="rubro-pill">${escapeHtml(row.rubro)}</span>` : "—"}</td>
-        <td>${currentYear}</td>
-        <td class="numeric"><strong>${escapeHtml(formatLiters(row.liters))}</strong></td>
-      </tr>`).join("");
-
-    setVisible(elements.tableEmpty, rows.length === 0);
+    const rows = filteredRows();
+    const hasRows = rows.length > 0;
+    byId("searchEmpty").classList.toggle("hidden", hasRows);
+    byId("tableWrap").classList.toggle("hidden", !hasRows);
+    byId("visibleCount").textContent = rows.length + (rows.length === 1 ? " producto" : " productos");
+    byId("tableBody").innerHTML = rows.map(function (row) {
+      const width = Math.min(100, Math.max(2, row.participacion * 3));
+      return "<tr>" +
+        '<td class="rank-cell"><span class="rank-badge' + (row.posicion <= 3 ? " top-three" : "") + '">' + row.posicion + "</span></td>" +
+        '<td class="product-cell">' + escapeHtml(row.producto) + "</td>" +
+        '<td class="rubro-cell">' + escapeHtml(row.rubro) + "</td>" +
+        "<td>" + escapeHtml(row.fechaId) + "</td>" +
+        '<td class="numeric">' + escapeHtml(numberFormat.format(row.litros)) + " L</td>" +
+        '<td class="numeric share-cell"><span class="share-value">' + escapeHtml(decimalFormat.format(row.participacion)) + '%</span><span class="share-track"><span class="share-fill" style="width:' + width.toFixed(1) + '%"></span></span></td>' +
+        "</tr>";
+    }).join("");
+    updateSortButtons();
   }
 
-  function renderQuality() {
-    const quality = state.quality;
-    elements.qualitySummary.textContent =
-      `${quality.currentYearRows} pedidos correspondieron a ${currentYear}. ` +
-      `${quality.invalidDateRows} filas no tuvieron una fecha interpretable; ` +
-      `${quality.invalidLiterRows} tuvieron litros no numéricos; ` +
-      `${quality.unmatchedRows} no coincidieron con el catálogo y ` +
-      `${quality.ambiguousOrderRows} coincidieron con productos duplicados. ` +
-      `El catálogo presentó ${quality.catalogDuplicateKeys} productos descriptivos duplicados. ` +
-      "Las relaciones inexistentes o ambiguas no recibieron un rubro.";
+  function renderTraceability() {
+    const q = model.quality;
+    const cautions = q.invalidPeriod + q.invalidLiters + q.missingProduct + q.missingMatch + q.ambiguous;
+    byId("traceSummary").textContent = cautions
+      ? "El ranking conserva los pedidos válidos y señala las excepciones sin inventar relaciones de catálogo."
+      : "El período y el cruce de productos no presentan excepciones en los registros procesados.";
+    const items = [
+      numberFormat.format(q.orderRows) + " pedidos procesados",
+      numberFormat.format(q.rowsInYear) + " pedidos de 2026",
+      numberFormat.format(q.catalogRows) + " filas de catálogo",
+      numberFormat.format(q.invalidPeriod) + " períodos inválidos",
+      numberFormat.format(q.invalidLiters) + " litros inválidos",
+      numberFormat.format(q.missingProduct) + " pedidos sin producto",
+      numberFormat.format(q.missingMatch) + " productos sin catálogo",
+      numberFormat.format(q.ambiguous) + " rubros ambiguos",
+      numberFormat.format(q.duplicatedCatalog) + " productos duplicados en catálogo"
+    ];
+    byId("traceList").innerHTML = items.map(function (item) { return "<li>" + escapeHtml(item) + "</li>"; }).join("");
   }
 
   function renderDashboard() {
-    const allAggregates = aggregateFilteredRows();
-    const topRows = allAggregates.slice(0, 100);
-    state.topRows = topRows;
-
-    const totalLiters = allAggregates.reduce((sum, row) => sum + row.liters, 0);
-    const leader = topRows[0];
-
-    elements.totalLiters.textContent = formatLiters(totalLiters);
-    elements.productCount.textContent = litersFormatter.format(allAggregates.length);
-    elements.productCountDetail.textContent = `${topRows.length} visibles en el ranking`;
-    elements.leaderName.textContent = leader?.product ?? "—";
-    elements.leaderName.title = leader?.product ?? "";
-    elements.leaderLiters.textContent = leader ? formatLiters(leader.liters) : "Sin volumen";
-    elements.rankingCount.textContent = `${topRows.length} ${topRows.length === 1 ? "producto" : "productos"}`;
-
-    const hasResults = topRows.length > 0;
-    setVisible(elements.emptyState, !hasResults);
-    setVisible(elements.dashboardContent, hasResults);
-
-    if (hasResults) {
-      renderRanking(topRows);
-      renderTable();
-      renderQuality();
-    }
+    renderKpis();
+    renderTable();
+    renderTraceability();
+    byId("tableSummary").textContent = "Top " + model.ranking.length + " de " + numberFormat.format(model.annualProducts) + " productos con pedidos válidos en 2026.";
+    byId("updatedAt").textContent = "Actualizado " + dateTimeFormat.format(new Date());
+    byId("connectionStatus").textContent = "Información actualizada";
   }
 
-  function showLoading() {
-    setVisible(elements.loadingState, true);
-    setVisible(elements.errorState, false);
-    setVisible(elements.emptyState, false);
-    setVisible(elements.dashboardContent, false);
-    setVisible(elements.retryButton, false);
-    elements.rubroFilter.disabled = true;
+  function showState(state) {
+    ["loadingState", "errorState", "emptyState", "dashboardContent"].forEach(function (id) {
+      byId(id).classList.add("hidden");
+    });
+    byId(state).classList.remove("hidden");
   }
 
-  function showError(error) {
-    const detail = error instanceof Error && error.message
-      ? `Detalle: ${error.message}`
-      : "Revisá la disponibilidad del Dashboard Manager SDK e intentá nuevamente.";
-    elements.errorMessage.textContent = detail;
-    setVisible(elements.loadingState, false);
-    setVisible(elements.errorState, true);
-    setVisible(elements.emptyState, false);
-    setVisible(elements.dashboardContent, false);
-    setVisible(elements.retryButton, true);
-  }
-
-  async function loadDashboard() {
-    showLoading();
-
+  async function initialize() {
+    showState("loadingState");
+    byId("connectionStatus").textContent = "Preparando información";
+    byId("updatedAt").textContent = "Actualización pendiente";
     try {
-      const sdk = window.DashboardManager;
-      if (!sdk || typeof sdk.aggregateDataset !== "function") {
-        throw new Error("DashboardManager no está disponible en este entorno.");
-      }
-
-      const [productResponse, orderResponse] = await Promise.all([
-        sdk.aggregateDataset(DATASETS.products, {
-          groupBy: ["producto", "rubro"],
-          aggregations: [{ column: "producto_id", operation: "COUNT", alias: "catalog_count" }],
-          filters: [],
-          sortBy: "producto",
-          sortDirection: "asc",
-          limit: 50000
-        }),
-        sdk.aggregateDataset(DATASETS.orders, {
-          groupBy: ["source_year", "producto"],
-          aggregations: [{ column: "litros_pedidos", operation: "SUM", alias: "litros_pedidos" }],
-          filters: [{ column: "source_year", operator: "EQ", value: String(currentYear) }],
-          sortBy: "litros_pedidos",
-          sortDirection: "desc",
-          limit: 50000
-        })
+      const results = await Promise.all([
+        getAllRows(CONTRACT.datasets.orders),
+        getAllRows(CONTRACT.datasets.catalog)
       ]);
-
-      const products = extractRows(productResponse);
-      const orders = extractRows(orderResponse);
-      const catalog = createCatalogIndex(products);
-      const result = prepareOrders(orders, catalog);
-
-      state.preparedOrders = result.prepared;
-      state.quality = result.quality;
-      populateRubroFilter();
-
-      setVisible(elements.loadingState, false);
-      setVisible(elements.errorState, false);
-      setVisible(elements.retryButton, false);
+      prepareModel(results[0], results[1]);
+      if (!model.ranking.length) {
+        byId("connectionStatus").textContent = "Sin datos para 2026";
+        byId("updatedAt").textContent = "Consulta completada";
+        showState("emptyState");
+        return;
+      }
       renderDashboard();
+      showState("dashboardContent");
     } catch (error) {
-      showError(error);
+      byId("errorMessage").textContent = error && error.message
+        ? error.message
+        : "Ocurrió un error inesperado. Reintentá la operación.";
+      byId("connectionStatus").textContent = "Información no disponible";
+      byId("updatedAt").textContent = "Carga interrumpida";
+      showState("errorState");
     }
   }
 
-  elements.currentYear.textContent = String(currentYear);
-  elements.yearFilter.options[0].textContent = String(currentYear);
-  elements.rubroFilter.addEventListener("change", renderDashboard);
-  elements.searchInput.addEventListener("input", renderTable);
-  elements.sortField.addEventListener("change", renderTable);
-  elements.sortDirection.addEventListener("change", renderTable);
-  elements.retryButton.addEventListener("click", loadDashboard);
+  function bindEvents() {
+    byId("retryButton").addEventListener("click", initialize);
+    byId("tableSearch").addEventListener("input", renderTable);
+    document.querySelectorAll(".sort-button").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const field = button.dataset.sort;
+        if (model.sort.field === field) {
+          model.sort.direction = model.sort.direction === "asc" ? "desc" : "asc";
+        } else {
+          model.sort.field = field;
+          model.sort.direction = field === "producto" || field === "rubro" ? "asc" : "desc";
+        }
+        renderTable();
+      });
+    });
+  }
 
-  loadDashboard();
-})();
+  bindEvents();
+  initialize();
+}());

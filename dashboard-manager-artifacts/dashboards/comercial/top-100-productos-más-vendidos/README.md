@@ -1,103 +1,75 @@
 # Top 100 productos más vendidos
 
-Dashboard analítico para Key Users del área Comercial. Identifica los 100 productos con mayor volumen pedido durante el año actual y permite filtrar el resultado por rubro.
+Dashboard estático para Key Users del área Comercial. Identifica los 100 productos con mayor volumen pedido durante 2026 y permite validar cada resultado desde una tabla analítica.
 
-## Identidad visual
+## Alcance funcional
 
-La interfaz aplica exclusivamente `GRUPO_DISAL_LOCKED`:
+- Período fijo: 2026. No se muestran controles de Año ni Rubro.
+- Métrica: suma de `litros_pedidos` por producto.
+- Resumen: litros anuales, cantidad de productos con pedidos, producto líder y concentración del Top 10.
+- Detalle: Top 100 con posición original, producto, rubro, fecha/período, litros pedidos y participación sobre el volumen anual.
+- Interacción: búsqueda local por producto o rubro y ordenamiento de columnas. La posición siempre conserva el ranking autoritativo por litros.
+- Estados contemplados: carga, error con reintento, respuesta válida sin resultados y búsqueda sin coincidencias.
+- La interfaz no consume archivos locales ni muestra el bloque explicativo de fuentes solicitado para remoción.
 
-- fondo ambiental claro `#eef7ff` y `#f9fcff`;
-- tarjetas blancas y bordes `#cfe2f5`;
-- azul corporativo `#0072bc` y celeste `#00a6df`;
-- verde, ámbar y rojo reservados para estados semánticos.
+## Contrato de datos
 
-No se incluye modo oscuro, recursos externos ni controles para modificar la identidad.
+El contrato ejecutable está en `dashboard.manifest.json`. Las únicas fuentes autorizadas son `pedidos` y `productos_catalogo`; las claves editables permitidas son `comentarios`, `acciones` y `metas`.
 
-## Fuentes autorizadas
+| Campo o cálculo | Dataset | Uso |
+| --- | --- | --- |
+| `source_year` | `pedidos` | Condición temporal 2026. |
+| `fecha_id` | `pedidos` | Respaldo para interpretar el año cuando `source_year` no es válido. |
+| `producto` | `pedidos` | Dimensión del ranking y clave descriptiva del cruce. |
+| `litros_pedidos` | `pedidos` | Métrica sumada por producto. |
+| `producto` | `productos_catalogo` | Clave descriptiva normalizada para enriquecer el ranking. |
+| `rubro` | `productos_catalogo` | Atributo informativo de la tabla y de la búsqueda. |
 
-El dashboard consulta en runtime, mediante `DashboardManager.getDataset`, únicamente:
+La aplicación consulta ambos datasets completos mediante `DashboardManager.getDataset(nombre)`, sin `limit`, `offset`, `fetch` ni conexión directa a la base. La agregación se realiza en memoria sobre todos los registros autorizados.
 
-- `pedidos`: aporta `fecha_id`, `source_year`, `producto` y `litros_pedidos`.
-- `productos_catalogo`: aporta `producto` y `rubro` para el cruce descriptivo.
+### Decisión de compatibilidad del SDK
 
-No se incorporan datasets, archivos estáticos de negocio, snapshots ni datos de demostración. `staticDataFiles` permanece vacío.
+El historial validado más reciente menciona `DashboardManager.aggregateDataset`, pero el contrato obligatorio del brief autoriza exclusivamente `getDataset`, `lookupDataset`, `getState`, `setState` y `getStateHistory`. Para no ampliar permisos ni depender de una operación fuera del contrato, esta versión usa `getDataset` sobre el conjunto completo. Si Dashboard Manager incorpora `aggregateDataset` al contrato oficial, la optimización servidora debe validarse administrativamente antes de reemplazar esta implementación.
 
-## Reglas de cálculo
+## Supuesto de cruce y controles
 
-1. El año se interpreta primero desde `pedidos.fecha_id`.
-2. Se admiten representaciones que comiencen con un año de cuatro dígitos, fechas con separadores y fechas en formato día/mes/año.
-3. Cuando `fecha_id` no permite obtener un año válido, se usa `source_year` como respaldo.
-4. Las filas sin año interpretable se excluyen y se contabilizan en la nota de trazabilidad.
-5. Solo se conservan pedidos cuyo año coincide con el año actual del entorno de ejecución.
-6. `litros_pedidos` se convierte a número contemplando separadores decimales razonables. Los valores vacíos o no numéricos se excluyen y contabilizan.
-7. Los pedidos se agrupan por el valor normalizado de `producto`, sin cambiar su significado, y se suma `litros_pedidos`.
-8. El resultado se ordena de mayor a menor y se limita a 100 productos después de aplicar los filtros.
-9. El total mostrado se calcula sobre todos los productos agregados que cumplen el filtro; la cantidad visible informa cuántos integran el Top 100.
+No existe una clave técnica común declarada entre `pedidos` y `productos_catalogo`. El cruce se realiza únicamente por el texto de `producto`, normalizado en mayúsculas/minúsculas, acentos y espacios, sin modificar su significado.
 
-## Cruce por producto y filtro Rubro
+- Si un producto de pedidos no existe en el catálogo, se conserva en el ranking con Rubro `Sin asignar`.
+- Si el catálogo devuelve más de un rubro para el mismo producto normalizado, se conserva el producto con Rubro `Sin asignar` y se registra como ambiguo.
+- Los duplicados del catálogo se informan en trazabilidad y no multiplican litros.
+- Filas con período, litros o producto inválidos se excluyen del cálculo correspondiente y se informan en trazabilidad.
+- No se inventan equivalencias, relaciones ni datos faltantes.
 
-No existe una clave técnica común declarada entre ambos datasets. Por eso, el cruce utiliza exclusivamente el campo descriptivo `producto`:
+Pregunta pendiente para el responsable de datos: ¿puede incorporarse una clave técnica común de producto en `pedidos` para reemplazar el cruce descriptivo por nombre?
 
-- se eliminan espacios exteriores y espacios repetidos;
-- se ignoran diferencias de mayúsculas y acentos;
-- no se aplican equivalencias, códigos alternativos ni relaciones inferidas;
-- si un producto aparece más de una vez en el catálogo, la coincidencia se considera ambigua;
-- los pedidos sin coincidencia o con coincidencia ambigua no reciben un rubro;
-- el selector Rubro contiene solo valores reales de registros relacionados inequívocamente;
-- al seleccionar un rubro, quedan incluidos únicamente los pedidos relacionados con ese valor.
+## Estados editables
 
-Cuando se seleccionan todos los rubros, los pedidos sin relación inequívoca siguen participando del ranking general, pero su rubro se muestra vacío en la tabla. Esto conserva el volumen real de pedidos sin inventar una clasificación.
+El manifest conserva exactamente `comentarios`, `acciones` y `metas` porque forman parte del contrato autorizado. Esta versión no presenta formularios ni guarda datos editables, por lo que no llama a `getState` ni `setState` y no requiere resolver conflictos 409 en la interfaz. Una evolución que incorpore edición deberá cargar primero la versión con `getState`, guardar con `setState` y recargar el estado vigente ante un conflicto 409.
 
-## Visualizaciones implementadas
+## Archivos y seguridad
 
-### Ranking horizontal
+- `dashboard.manifest.json`: contrato de importación, versión 1.0.1.
+- `workspace.json`: metadata del workspace y `dashboardId` existente.
+- `index.html`: estructura accesible y carga única de `/dashboard-sdk.js`.
+- `style.css`: identidad clara `GRUPO_DISAL_LOCKED`, responsive y sin modo oscuro.
+- `app.js`: carga, validación, agregación, cruce, búsqueda, orden y estados operativos.
+- `staticDataFiles` permanece vacío. No hay CSV, JSON, payloads ni archivos corporativos consumidos.
+- No hay CDN, scripts remotos, `eval`, secretos, tokens, endpoints internos ni almacenamiento local.
 
-Vista principal autorizada. Muestra posición, producto, suma de litros pedidos y una escala proporcional respecto del producto líder. Mantiene siempre el orden descendente del Top 100.
+## Validación antes de importar
 
-### Tabla analítica
+1. Confirmar que `dashboard.manifest.json` y `workspace.json` declaren la versión `1.0.1` y el dashboardId `141181fb-dd0e-4f5d-9254-822de6dc934e`.
+2. Ejecutar el validador de paquetes de Dashboard Manager.
+3. Verificar que `/disal_logo_informe.png` y `/dashboard-sdk.js` estén disponibles en el entorno de vista previa.
+4. Probar respuestas directas y envolturas con `rows`, `data`, `items`, `records`, `payload`, `data.rows`, `payload.rows`, `result.rows` o `dataset.rows` para ambos datasets.
+5. Contrastar el total anual, la cantidad de productos y las primeras posiciones contra una consulta autorizada de control para 2026.
+6. Probar productos sin catálogo, duplicados, rubros ambiguos y valores inválidos.
+7. Verificar carga, error, reintento, ausencia de resultados, búsqueda sin coincidencias y ordenamiento.
+8. Revisar la vista en escritorio, tablet y móvil dentro del iframe sandbox.
+9. Confirmar que no aparezcan controles de Año/Rubro ni una sección titulada “Fuentes de datos”.
+10. Importar desde la ruta GitHub declarada en el manifest únicamente después de completar las verificaciones.
 
-Usa exactamente las mismas filas agregadas del ranking y muestra:
+## Versionado
 
-- posición original;
-- producto;
-- rubro, solo cuando la relación es inequívoca;
-- período;
-- litros pedidos agregados.
-
-La búsqueda y el orden son locales y no modifican el ranking ni vuelven a consultar los datasets.
-
-El análisis Pareto no se incluye porque no figura en `governanceContract.approvedWidgets`. Tampoco se incluyen KPI, barras, embudo o alertas basados en ventas, clientes o metas, ya que esos campos y datasets no están autorizados para este dashboard. No se sustituyen por métricas inventadas.
-
-## Estados de interfaz
-
-- `Cargando`: aparece mientras se consultan ambos datasets.
-- `Error`: aparece si el SDK no está disponible o una consulta falla, con opción de reintento.
-- `Sin resultados`: aparece únicamente después de completar una consulta legítima cuando los filtros no producen registros agregados.
-- `Trazabilidad`: informa fechas inválidas, litros no numéricos, pedidos sin relación, coincidencias ambiguas y duplicados del catálogo.
-
-## Datos editables y permisos
-
-El manifest conserva exactamente las claves autorizadas:
-
-- `comentarios`
-- `acciones`
-- `metas`
-
-La interfaz no invoca `getState` ni `setState` y no incorpora formularios de edición. Las claves permanecen declaradas únicamente para conservar los permisos existentes.
-
-## Validación previa a la importación
-
-1. Validar que `dashboard.manifest.json` sea JSON válido.
-2. Confirmar `entrypoint: index.html`, `visualIdentity: GRUPO_DISAL_LOCKED` y `staticDataFiles: []`.
-3. Confirmar que `allowedDataSources` contiene únicamente `productos_catalogo` y `pedidos`.
-4. Confirmar que `editableStateKeys` contiene únicamente `comentarios`, `acciones` y `metas`.
-5. Verificar que `index.html` carga una sola vez `dashboard-sdk.js` y no contiene recursos externos.
-6. Verificar que `app.js` llama una vez a `DashboardManager.getDataset` para cada dataset, sin `limit`, `offset`, `fetch` ni datos demo.
-7. Probar fechas válidas, respaldo con `source_year`, fechas inválidas, litros nulos y litros no numéricos.
-8. Contrastar la suma del resultado filtrado con la suma de sus productos agregados.
-9. Confirmar orden descendente, límite de 100 y correspondencia entre ranking y tabla.
-10. Probar catálogo vacío, pedidos vacíos, productos duplicados, pedidos sin coincidencia, filtro sin resultados y error del SDK.
-11. Revisar la vista en escritorio, tablet y móvil.
-12. Confirmar que `index.html`, `style.css` y `app.js` no contienen fondos oscuros prohibidos, variantes oscuras ni paletas alternativas.
-
-La importación y la publicación no forman parte de esta entrega. El paquete no contiene secretos, credenciales, endpoints externos ni conexiones directas.
+La versión `1.0.1` es una revisión técnica importable del mismo dashboard. Mantiene el dashboardId, los datasets, las claves editables, la identidad visual y los permisos definidos; el incremento evita reutilizar el artefacto `1.0.0` ya importado.
