@@ -65,43 +65,70 @@
     return Number.isFinite(parsed) ? parsed : null;
   }
 
-  function parseYear(row) {
-    const sourceYear = Number.parseInt(row && row.source_year, 10);
-    if (Number.isFinite(sourceYear)) return sourceYear;
-    const rawDate = String(row && row.fecha_id !== undefined ? row.fecha_id : "").trim();
-    const match = rawDate.match(/(?:^|\D)(20\d{2})(?:\D|$)/);
-    if (match) return Number.parseInt(match[1], 10);
-    if (/^\d{8}$/.test(rawDate)) return Number.parseInt(rawDate.slice(0, 4), 10);
-    return null;
-  }
-
-  function unwrapRows(result, datasetName) {
+  function unwrapAggregateItems(result, datasetName) {
     if (Array.isArray(result)) return result;
     const candidates = [
-      result && result.rows,
-      result && result.data,
       result && result.items,
-      result && result.records,
-      result && result.payload,
-      result && result.data && result.data.rows,
       result && result.data && result.data.items,
-      result && result.payload && result.payload.rows,
       result && result.payload && result.payload.items,
-      result && result.result && result.result.rows,
-      result && result.result && result.result.data,
-      result && result.dataset && result.dataset.rows
+      result && result.result && result.result.items
     ];
-    const rows = candidates.find(Array.isArray);
-    if (rows) return rows;
-    throw new Error("El dataset " + datasetName + " respondió con un formato no reconocido.");
+    const items = candidates.find(Array.isArray);
+    if (items) return items;
+    throw new Error("La agregación de " + datasetName + " respondió con un formato no reconocido.");
   }
 
-  async function getAllRows(datasetName) {
+  async function aggregateRows(datasetName, request) {
     const manager = sdk();
-    if (!manager || typeof manager.getDataset !== "function") {
+    if (!manager || typeof manager.aggregateDataset !== "function") {
       throw new Error("Dashboard Manager SDK no está disponible en este entorno.");
     }
-    return unwrapRows(await manager.getDataset(datasetName), datasetName);
+    return unwrapAggregateItems(await manager.aggregateDataset(datasetName, request), datasetName);
+  }
+
+  function yearFilter() {
+    return [{ column: "source_year", operator: "EQ", value: String(REPORT_YEAR) }];
+  }
+
+  function summaryRequest() {
+    return {
+      groupBy: ["source_year"],
+      aggregations: [
+        { column: "litros_pedidos", operation: "SUM", alias: "total_litros" },
+        { column: "producto", operation: "COUNT", alias: "filas_con_producto" }
+      ],
+      filters: yearFilter(),
+      sortBy: "total_litros",
+      sortDirection: "desc",
+      limit: 1
+    };
+  }
+
+  function productsRequest(limit) {
+    return {
+      groupBy: ["producto"],
+      aggregations: [
+        { column: "litros_pedidos", operation: "SUM", alias: "litros" },
+        { column: "producto", operation: "COUNT", alias: "filas_pedido" }
+      ],
+      filters: yearFilter(),
+      sortBy: "litros",
+      sortDirection: "desc",
+      limit: limit
+    };
+  }
+
+  function catalogRequest() {
+    return {
+      groupBy: ["producto", "rubro"],
+      aggregations: [
+        { column: "producto", operation: "COUNT", alias: "filas_catalogo" }
+      ],
+      filters: [],
+      sortBy: "producto",
+      sortDirection: "asc",
+      limit: 50000
+    };
   }
 
   function buildCatalogIndex(rows) {
@@ -115,61 +142,28 @@
       }
       if (!index.has(key)) index.set(key, { rows: 0, rubros: new Set() });
       const entry = index.get(key);
-      entry.rows += 1;
+      entry.rows += parseNumber(row.filas_catalogo) || 0;
       const rubro = displayText(row.rubro, "");
       if (rubro) entry.rubros.add(rubro);
     });
     return { index: index, missingProduct: missingProduct };
   }
 
-  function aggregateOrders(rows) {
-    const groups = new Map();
-    const quality = {
-      orderRows: rows.length,
-      rowsInYear: 0,
-      invalidPeriod: 0,
-      invalidLiters: 0,
-      missingProduct: 0
-    };
-
-    rows.forEach(function (row) {
-      const year = parseYear(row);
-      if (year === null) {
-        quality.invalidPeriod += 1;
-        return;
-      }
-      if (year !== REPORT_YEAR) return;
-      quality.rowsInYear += 1;
-
-      const liters = parseNumber(row.litros_pedidos);
-      if (liters === null) {
-        quality.invalidLiters += 1;
-        return;
-      }
-      const key = normalizeText(row.producto);
-      if (!key) {
-        quality.missingProduct += 1;
-        return;
-      }
-      if (!groups.has(key)) {
-        groups.set(key, {
-          key: key,
-          producto: displayText(row.producto, "Producto sin nombre"),
-          litros: 0
-        });
-      }
-      groups.get(key).litros += liters;
-    });
-
-    return { groups: Array.from(groups.values()), quality: quality };
-  }
-
-  function joinCatalog(groups, catalog) {
+  function joinCatalog(rankingRows, catalog) {
     let missingMatch = 0;
     let ambiguous = 0;
     let duplicatedCatalog = 0;
-    const enriched = groups.map(function (group) {
-      const match = catalog.index.get(group.key);
+    let missingProduct = 0;
+    const enriched = [];
+    rankingRows.forEach(function (row) {
+      const producto = displayText(row.producto, "");
+      const key = normalizeText(producto);
+      const litros = parseNumber(row.litros);
+      if (!key || litros === null) {
+        missingProduct += 1;
+        return;
+      }
+      const match = catalog.index.get(key);
       let rubro = "Sin asignar";
       if (!match) {
         missingMatch += 1;
@@ -178,12 +172,12 @@
         if (match.rubros.size === 1) rubro = Array.from(match.rubros)[0];
         if (match.rubros.size > 1) ambiguous += 1;
       }
-      return {
-        producto: group.producto,
+      enriched.push({
+        producto: producto,
         rubro: rubro,
-        litros: group.litros,
+        litros: litros,
         fechaId: String(REPORT_YEAR)
-      };
+      });
     });
     return {
       rows: enriched,
@@ -191,20 +185,23 @@
         missingMatch: missingMatch,
         ambiguous: ambiguous,
         duplicatedCatalog: duplicatedCatalog,
-        catalogMissingProduct: catalog.missingProduct
+        catalogMissingProduct: catalog.missingProduct,
+        missingProduct: missingProduct
       }
     };
   }
 
-  function prepareModel(orderRows, catalogRows) {
-    const aggregated = aggregateOrders(orderRows);
+  function prepareModel(summaryRows, rankingRows, productRows, catalogRows) {
+    if (rankingRows.length && !summaryRows.length) {
+      throw new Error("La consulta anual no devolvió el total necesario para validar el ranking.");
+    }
+    const annualLiters = summaryRows.length ? parseNumber(summaryRows[0].total_litros) : 0;
+    if (summaryRows.length && annualLiters === null) {
+      throw new Error("La métrica total_litros no es numérica en la respuesta agregada.");
+    }
     const catalog = buildCatalogIndex(catalogRows);
-    const joined = joinCatalog(aggregated.groups, catalog);
-    const allProducts = joined.rows.sort(function (a, b) {
-      return b.litros - a.litros || a.producto.localeCompare(b.producto, "es-AR");
-    });
-    const annualLiters = allProducts.reduce(function (sum, row) { return sum + row.litros; }, 0);
-    const ranking = allProducts.slice(0, 100).map(function (row, index) {
+    const joined = joinCatalog(rankingRows, catalog);
+    const ranking = joined.rows.map(function (row, index) {
       return Object.assign({}, row, {
         posicion: index + 1,
         participacion: annualLiters ? row.litros / annualLiters * 100 : 0
@@ -213,10 +210,14 @@
 
     model.ranking = ranking;
     model.annualLiters = annualLiters;
-    model.annualProducts = allProducts.length;
-    model.quality = Object.assign({}, aggregated.quality, joined.quality, {
-      catalogRows: catalogRows.length,
-      aggregatedProducts: allProducts.length
+    model.annualProducts = productRows.filter(function (row) {
+      return normalizeText(row.producto) && parseNumber(row.litros) !== null;
+    }).length;
+    model.quality = Object.assign({}, joined.quality, {
+      rankingGroups: rankingRows.length,
+      catalogGroups: catalogRows.length,
+      aggregatedProducts: model.annualProducts,
+      rowsWithProduct: summaryRows.length ? parseNumber(summaryRows[0].filas_con_producto) || 0 : 0
     });
   }
 
@@ -291,17 +292,16 @@
 
   function renderTraceability() {
     const q = model.quality;
-    const cautions = q.invalidPeriod + q.invalidLiters + q.missingProduct + q.missingMatch + q.ambiguous;
+    const cautions = q.missingProduct + q.missingMatch + q.ambiguous;
     byId("traceSummary").textContent = cautions
-      ? "El ranking conserva los pedidos válidos y señala las excepciones sin inventar relaciones de catálogo."
-      : "El período y el cruce de productos no presentan excepciones en los registros procesados.";
+      ? "Las agregaciones se ejecutaron sobre el total autorizado y el cruce conserva las excepciones sin inventar relaciones."
+      : "Las agregaciones servidoras y el cruce de productos no presentan excepciones en el Top 100.";
     const items = [
-      numberFormat.format(q.orderRows) + " pedidos procesados",
-      numberFormat.format(q.rowsInYear) + " pedidos de 2026",
-      numberFormat.format(q.catalogRows) + " filas de catálogo",
-      numberFormat.format(q.invalidPeriod) + " períodos inválidos",
-      numberFormat.format(q.invalidLiters) + " litros inválidos",
-      numberFormat.format(q.missingProduct) + " pedidos sin producto",
+      numberFormat.format(q.rowsWithProduct) + " pedidos 2026 con producto",
+      numberFormat.format(q.aggregatedProducts) + " productos agregados",
+      numberFormat.format(q.rankingGroups) + " posiciones recibidas",
+      numberFormat.format(q.catalogGroups) + " grupos de catálogo",
+      numberFormat.format(q.missingProduct) + " grupos inválidos",
       numberFormat.format(q.missingMatch) + " productos sin catálogo",
       numberFormat.format(q.ambiguous) + " rubros ambiguos",
       numberFormat.format(q.duplicatedCatalog) + " productos duplicados en catálogo"
@@ -331,10 +331,12 @@
     byId("updatedAt").textContent = "Actualización pendiente";
     try {
       const results = await Promise.all([
-        getAllRows(CONTRACT.datasets.orders),
-        getAllRows(CONTRACT.datasets.catalog)
+        aggregateRows(CONTRACT.datasets.orders, summaryRequest()),
+        aggregateRows(CONTRACT.datasets.orders, productsRequest(100)),
+        aggregateRows(CONTRACT.datasets.orders, productsRequest(50000)),
+        aggregateRows(CONTRACT.datasets.catalog, catalogRequest())
       ]);
-      prepareModel(results[0], results[1]);
+      prepareModel(results[0], results[1], results[2], results[3]);
       if (!model.ranking.length) {
         byId("connectionStatus").textContent = "Sin datos para 2026";
         byId("updatedAt").textContent = "Consulta completada";

@@ -19,17 +19,21 @@ El contrato ejecutable está en `dashboard.manifest.json`. Las únicas fuentes a
 | Campo o cálculo | Dataset | Uso |
 | --- | --- | --- |
 | `source_year` | `pedidos` | Condición temporal 2026. |
-| `fecha_id` | `pedidos` | Respaldo para interpretar el año cuando `source_year` no es válido. |
+| `fecha_id` | `pedidos` | Se presenta como contexto anual consolidado en la tabla. |
 | `producto` | `pedidos` | Dimensión del ranking y clave descriptiva del cruce. |
 | `litros_pedidos` | `pedidos` | Métrica sumada por producto. |
 | `producto` | `productos_catalogo` | Clave descriptiva normalizada para enriquecer el ranking. |
 | `rubro` | `productos_catalogo` | Atributo informativo de la tabla y de la búsqueda. |
 
-La aplicación consulta ambos datasets completos mediante `DashboardManager.getDataset(nombre)`, sin `limit`, `offset`, `fetch` ni conexión directa a la base. La agregación se realiza en memoria sobre todos los registros autorizados.
+La aplicación consulta ambos datasets mediante `DashboardManager.aggregateDataset(nombre, request)`. El filtro `source_year = 2026`, las sumas, agrupaciones, orden y límites se ejecutan en el servidor sobre el conjunto completo autorizado, sin `fetch` ni conexión directa a la base.
 
-### Decisión de compatibilidad del SDK
+### Estrategia de agregación
 
-El historial validado más reciente menciona `DashboardManager.aggregateDataset`, pero el contrato obligatorio del brief autoriza exclusivamente `getDataset`, `lookupDataset`, `getState`, `setState` y `getStateHistory`. Para no ampliar permisos ni depender de una operación fuera del contrato, esta versión usa `getDataset` sobre el conjunto completo. Si Dashboard Manager incorpora `aggregateDataset` al contrato oficial, la optimización servidora debe validarse administrativamente antes de reemplazar esta implementación.
+- Resumen anual: agrupación por `source_year`, suma de `litros_pedidos` y conteo de pedidos con producto.
+- Ranking: agrupación por `producto`, suma de `litros_pedidos`, orden descendente y límite servidor de 100.
+- Cobertura: la misma agrupación por producto con límite de seguridad de 50.000 grupos para contar productos distintos.
+- Catálogo: agrupación por `producto` y `rubro` para enriquecer el Top 100 sin multiplicar litros.
+- La respuesta válida del SDK se normaliza desde la colección `items`. Un formato desconocido se muestra como error y no como cero resultados.
 
 ## Supuesto de cruce y controles
 
@@ -38,7 +42,7 @@ No existe una clave técnica común declarada entre `pedidos` y `productos_catal
 - Si un producto de pedidos no existe en el catálogo, se conserva en el ranking con Rubro `Sin asignar`.
 - Si el catálogo devuelve más de un rubro para el mismo producto normalizado, se conserva el producto con Rubro `Sin asignar` y se registra como ambiguo.
 - Los duplicados del catálogo se informan en trazabilidad y no multiplican litros.
-- Filas con período, litros o producto inválidos se excluyen del cálculo correspondiente y se informan en trazabilidad.
+- Los grupos sin producto o con una métrica no numérica se excluyen del Top 100 y se informan en trazabilidad.
 - No se inventan equivalencias, relaciones ni datos faltantes.
 
 Pregunta pendiente para el responsable de datos: ¿puede incorporarse una clave técnica común de producto en `pedidos` para reemplazar el cruce descriptivo por nombre?
@@ -49,7 +53,7 @@ El manifest conserva exactamente `comentarios`, `acciones` y `metas` porque form
 
 ## Archivos y seguridad
 
-- `dashboard.manifest.json`: contrato de importación, versión 1.0.1.
+- `dashboard.manifest.json`: contrato de importación, versión 1.0.2.
 - `workspace.json`: metadata del workspace y `dashboardId` existente.
 - `index.html`: estructura accesible y carga única de `/dashboard-sdk.js`.
 - `style.css`: identidad clara `GRUPO_DISAL_LOCKED`, responsive y sin modo oscuro.
@@ -59,10 +63,10 @@ El manifest conserva exactamente `comentarios`, `acciones` y `metas` porque form
 
 ## Validación antes de importar
 
-1. Confirmar que `dashboard.manifest.json` y `workspace.json` declaren la versión `1.0.1` y el dashboardId `141181fb-dd0e-4f5d-9254-822de6dc934e`.
+1. Confirmar que `dashboard.manifest.json` y `workspace.json` declaren la versión `1.0.2` y el dashboardId `141181fb-dd0e-4f5d-9254-822de6dc934e`.
 2. Ejecutar el validador de paquetes de Dashboard Manager.
 3. Verificar que `/disal_logo_informe.png` y `/dashboard-sdk.js` estén disponibles en el entorno de vista previa.
-4. Probar respuestas directas y envolturas con `rows`, `data`, `items`, `records`, `payload`, `data.rows`, `payload.rows`, `result.rows` o `dataset.rows` para ambos datasets.
+4. Probar la envoltura agregada oficial `{ dataset, items }`, una colección vacía, un formato desconocido y un rechazo del SDK.
 5. Contrastar el total anual, la cantidad de productos y las primeras posiciones contra una consulta autorizada de control para 2026.
 6. Probar productos sin catálogo, duplicados, rubros ambiguos y valores inválidos.
 7. Verificar carga, error, reintento, ausencia de resultados, búsqueda sin coincidencias y ordenamiento.
@@ -72,4 +76,4 @@ El manifest conserva exactamente `comentarios`, `acciones` y `metas` porque form
 
 ## Versionado
 
-La versión `1.0.1` es una revisión técnica importable del mismo dashboard. Mantiene el dashboardId, los datasets, las claves editables, la identidad visual y los permisos definidos; el incremento evita reutilizar el artefacto `1.0.0` ya importado.
+La versión `1.0.2` corrige el cálculo que usaba `getDataset` y podía trabajar sobre una muestra acotada sin registros de 2026. Ahora los indicadores y el ranking se resuelven con agregaciones servidoras sobre todo el dataset autorizado. Mantiene el dashboardId, los datasets, las claves editables, la identidad visual y los permisos definidos.
