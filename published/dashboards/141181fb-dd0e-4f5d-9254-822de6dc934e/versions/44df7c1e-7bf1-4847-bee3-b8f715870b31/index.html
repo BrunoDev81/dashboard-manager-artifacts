@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Top 100 de productos por litros pedidos del último período disponible.">
+  <title>Top 100 productos más vendidos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Ir al contenido principal</a>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <img class="brand-logo" src="/disal_logo_informe.png" alt="Grupo Disal">
+        <span class="area-label">COMERCIAL</span>
+      </div>
+      <div class="period-badge" aria-label="Período del informe">
+        <span>Período</span>
+        <strong data-report-year>2026</strong>
+      </div>
+    </div>
+  </header>
+
+  <main id="mainContent" class="page-shell">
+    <section class="hero" aria-labelledby="pageTitle">
+      <div>
+        <p class="eyebrow">ANÁLISIS DE VOLUMEN PEDIDO</p>
+        <h1 id="pageTitle">Top 100 productos más vendidos</h1>
+        <p class="hero-copy">Una lectura verificable de los productos con mayor volumen pedido durante <span data-report-year>2026</span>, medida en litros.</p>
+      </div>
+      <div class="connection-card" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <div>
+          <strong id="connectionStatus">Preparando información</strong>
+          <span id="updatedAt">Actualización pendiente</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="loadingState" class="state-card" aria-live="polite" aria-busy="true">
+      <div class="loader" aria-hidden="true"></div>
+      <div>
+        <strong>Estamos consolidando el Top 100</strong>
+        <p>Procesamos los pedidos autorizados y completamos el rubro desde el catálogo.</p>
+      </div>
+    </section>
+
+    <section id="errorState" class="state-card state-error hidden" role="alert">
+      <div class="state-icon" aria-hidden="true">!</div>
+      <div>
+        <strong>No pudimos cargar la información</strong>
+        <p id="errorMessage">Reintentá la operación.</p>
+        <button id="retryButton" class="button button-primary" type="button">Reintentar carga</button>
+      </div>
+    </section>
+
+    <section id="emptyState" class="state-card hidden" aria-live="polite">
+      <div class="state-icon state-icon-empty" aria-hidden="true">0</div>
+      <div>
+        <strong>No hay pedidos para <span data-report-year>2026</span></strong>
+        <p>La consulta respondió correctamente, pero no encontramos productos con litros pedidos válidos para el período.</p>
+      </div>
+    </section>
+
+    <div id="dashboardContent" class="dashboard-content hidden">
+      <section aria-labelledby="summaryTitle">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">RESUMEN DEL PERÍODO</p>
+            <h2 id="summaryTitle">Indicadores clave</h2>
+          </div>
+          <p class="section-note">Cálculos sobre todos los pedidos válidos de <span data-report-year>2026</span>.</p>
+        </div>
+        <div id="kpiGrid" class="kpi-grid" data-widget="kpi-cards"></div>
+      </section>
+
+      <section class="table-card" aria-labelledby="tableTitle" data-widget="data-table">
+        <div class="table-header">
+          <div>
+            <p class="section-kicker">DETALLE ANALÍTICO</p>
+            <h2 id="tableTitle">Top 100 consolidado</h2>
+            <p id="tableSummary" class="table-summary">Ordenado por litros pedidos, de mayor a menor.</p>
+          </div>
+          <label class="search-control" for="tableSearch">
+            <span>Buscar en el Top 100</span>
+            <input id="tableSearch" type="search" placeholder="Producto o rubro" autocomplete="off">
+          </label>
+        </div>
+
+        <div id="searchEmpty" class="inline-empty hidden" role="status">
+          <strong>Sin coincidencias</strong>
+          <span>Probá con otro producto o rubro.</span>
+        </div>
+
+        <div id="tableWrap" class="table-wrap" tabindex="0" aria-label="Tabla del Top 100 productos">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" class="rank-column">Posición</th>
+                <th scope="col"><button class="sort-button" type="button" data-sort="producto">Producto <span aria-hidden="true">↕</span></button></th>
+                <th scope="col"><button class="sort-button" type="button" data-sort="rubro">Rubro <span aria-hidden="true">↕</span></button></th>
+                <th scope="col">Fecha Id</th>
+                <th scope="col" class="numeric"><button class="sort-button numeric" type="button" data-sort="litros">Litros pedidos <span aria-hidden="true">↓</span></button></th>
+                <th scope="col" class="numeric"><button class="sort-button numeric" type="button" data-sort="participacion">Participación <span aria-hidden="true">↕</span></button></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="visibleCount">0 productos</span>
+          <span>La posición conserva el orden original por volumen.</span>
+        </div>
+      </section>
+
+      <aside class="trace-card" aria-labelledby="traceTitle">
+        <div class="trace-icon" aria-hidden="true">✓</div>
+        <div>
+          <p class="section-kicker">TRAZABILIDAD DE DATOS</p>
+          <h2 id="traceTitle">Controles aplicados al cruce</h2>
+          <p id="traceSummary">Validación pendiente.</p>
+          <ul id="traceList" class="trace-list"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <span>GRUPO DISAL · Información comercial autorizada</span>
+    <span>Versión 1.0.2</span>
+  </footer>
+
+  <script src="/dashboard-sdk.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
