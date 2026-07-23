@@ -1,0 +1,24 @@
+{
+  "name": "Top 100 productos más vendidos",
+  "description": "Identificar los 100 productos con mayor volumen pedido durante 2026.",
+  "entrypoint": "index.html",
+  "version": "1.0.2",
+  "requiresApi": true,
+  "allowedDataSources": [
+    "productos_catalogo",
+    "pedidos"
+  ],
+  "editableStateKeys": [
+    "comentarios",
+    "acciones",
+    "metas"
+  ],
+  "staticDataFiles": [],
+  "source": {
+    "type": "GITHUB_WORKSPACE",
+    "repository": "BrunoDev81/dashboard-manager-artifacts",
+    "branch": "main",
+    "path": "dashboard-manager-artifacts/dashboards/comercial/top-100-productos-más-vendidos"
+  },
+  "visualIdentity": "GRUPO_DISAL_LOCKED"
+}
