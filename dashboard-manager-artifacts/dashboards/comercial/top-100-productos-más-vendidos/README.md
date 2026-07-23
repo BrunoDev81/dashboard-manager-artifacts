@@ -1,10 +1,10 @@
 # Top 100 productos más vendidos
 
-Dashboard estático para Key Users del área Comercial. Identifica los 100 productos con mayor volumen pedido durante 2026 y permite validar cada resultado desde una tabla analítica.
+Dashboard estático para Key Users del área Comercial. Prioriza 2026 y, cuando ese período todavía no tiene volumen, identifica los 100 productos del último año disponible. Cada resultado puede validarse desde una tabla analítica.
 
 ## Alcance funcional
 
-- Período fijo: 2026. No se muestran controles de Año ni Rubro.
+- Período automático: prioriza 2026 y usa el último `source_year` con volumen cuando 2026 está vacío. No se muestran controles de Año ni Rubro.
 - Métrica: suma de `litros_pedidos` por producto.
 - Resumen: litros anuales, cantidad de productos con pedidos, producto líder y concentración del Top 10.
 - Detalle: Top 100 con posición original, producto, rubro, fecha/período, litros pedidos y participación sobre el volumen anual.
@@ -18,18 +18,19 @@ El contrato ejecutable está en `dashboard.manifest.json`. Las únicas fuentes a
 
 | Campo o cálculo | Dataset | Uso |
 | --- | --- | --- |
-| `source_year` | `pedidos` | Condición temporal 2026. |
+| `source_year` | `pedidos` | Descubrimiento y condición del período efectivo. |
 | `fecha_id` | `pedidos` | Se presenta como contexto anual consolidado en la tabla. |
 | `producto` | `pedidos` | Dimensión del ranking y clave descriptiva del cruce. |
 | `litros_pedidos` | `pedidos` | Métrica sumada por producto. |
 | `producto` | `productos_catalogo` | Clave descriptiva normalizada para enriquecer el ranking. |
 | `rubro` | `productos_catalogo` | Atributo informativo de la tabla y de la búsqueda. |
 
-La aplicación consulta ambos datasets mediante `DashboardManager.aggregateDataset(nombre, request)`. El filtro `source_year = 2026`, las sumas, agrupaciones, orden y límites se ejecutan en el servidor sobre el conjunto completo autorizado, sin `fetch` ni conexión directa a la base.
+La aplicación consulta ambos datasets mediante `DashboardManager.aggregateDataset(nombre, request)`. Primero obtiene el volumen por `source_year`; después aplica el período resuelto al resumen y al ranking. Las sumas, agrupaciones, orden y límites se ejecutan en el servidor sobre el conjunto completo autorizado, sin `fetch` ni conexión directa a la base.
 
 ### Estrategia de agregación
 
-- Resumen anual: agrupación por `source_year`, suma de `litros_pedidos` y conteo de pedidos con producto.
+- Períodos: agrupación por `source_year` y suma de `litros_pedidos` para elegir 2026 o el último año con volumen.
+- Resumen anual: agrupación por el `source_year` efectivo, suma de `litros_pedidos` y conteo de pedidos con producto.
 - Ranking: agrupación por `producto`, suma de `litros_pedidos`, orden descendente y límite servidor de 100.
 - Cobertura: la misma agrupación por producto con límite de seguridad de 50.000 grupos para contar productos distintos.
 - Catálogo: agrupación por `producto` y `rubro` para enriquecer el Top 100 sin multiplicar litros.
@@ -67,7 +68,7 @@ El manifest conserva exactamente `comentarios`, `acciones` y `metas` porque form
 2. Ejecutar el validador de paquetes de Dashboard Manager.
 3. Verificar que `/disal_logo_informe.png` y `/dashboard-sdk.js` estén disponibles en el entorno de vista previa.
 4. Probar la envoltura agregada oficial `{ dataset, items }`, una colección vacía, un formato desconocido y un rechazo del SDK.
-5. Contrastar el total anual, la cantidad de productos y las primeras posiciones contra una consulta autorizada de control para 2026.
+5. Contrastar el total anual, la cantidad de productos y las primeras posiciones contra una consulta autorizada para el período mostrado.
 6. Probar productos sin catálogo, duplicados, rubros ambiguos y valores inválidos.
 7. Verificar carga, error, reintento, ausencia de resultados, búsqueda sin coincidencias y ordenamiento.
 8. Revisar la vista en escritorio, tablet y móvil dentro del iframe sandbox.
@@ -76,4 +77,4 @@ El manifest conserva exactamente `comentarios`, `acciones` y `metas` porque form
 
 ## Versionado
 
-La versión `1.0.2` corrige el cálculo que usaba `getDataset` y podía trabajar sobre una muestra acotada sin registros de 2026. Ahora los indicadores y el ranking se resuelven con agregaciones servidoras sobre todo el dataset autorizado. Mantiene el dashboardId, los datasets, las claves editables, la identidad visual y los permisos definidos.
+La versión `1.0.2` corrige el cálculo que usaba `getDataset` y podía trabajar sobre una muestra acotada. Ahora los indicadores y el ranking se resuelven con agregaciones servidoras sobre todo el dataset autorizado; si 2026 está vacío, se usa el último período con volumen y la interfaz deja de presentar un falso cero. Mantiene el dashboardId, los datasets, las claves editables, la identidad visual y los permisos definidos.

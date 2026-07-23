@@ -1,7 +1,8 @@
 (function () {
   "use strict";
 
-  const REPORT_YEAR = 2026;
+  const PREFERRED_YEAR = 2026;
+  let reportYear = PREFERRED_YEAR;
   const CONTRACT = Object.freeze({
     datasets: Object.freeze({ catalog: "productos_catalogo", orders: "pedidos" }),
     editableStateKeys: Object.freeze(["comentarios", "acciones", "metas"])
@@ -87,7 +88,44 @@
   }
 
   function yearFilter() {
-    return [{ column: "source_year", operator: "EQ", value: String(REPORT_YEAR) }];
+    return [{ column: "source_year", operator: "EQ", value: String(reportYear) }];
+  }
+
+  function periodsRequest() {
+    return {
+      groupBy: ["source_year"],
+      aggregations: [
+        { column: "litros_pedidos", operation: "SUM", alias: "total_litros" }
+      ],
+      filters: [],
+      sortBy: "source_year",
+      sortDirection: "desc",
+      limit: 20
+    };
+  }
+
+  function resolveReportYear(rows) {
+    const periods = rows.map(function (row) {
+      return {
+        year: Number.parseInt(String(row && row.source_year), 10),
+        liters: parseNumber(row && row.total_litros)
+      };
+    }).filter(function (row) {
+      return Number.isInteger(row.year) && row.year >= 1900 && row.year <= 2200 &&
+        row.liters !== null && row.liters > 0;
+    }).sort(function (left, right) {
+      return right.year - left.year;
+    });
+
+    return periods.some(function (row) { return row.year === PREFERRED_YEAR; })
+      ? PREFERRED_YEAR
+      : (periods[0] ? periods[0].year : PREFERRED_YEAR);
+  }
+
+  function updatePeriodLabels() {
+    document.querySelectorAll("[data-report-year]").forEach(function (element) {
+      element.textContent = String(reportYear);
+    });
   }
 
   function summaryRequest() {
@@ -176,7 +214,7 @@
         producto: producto,
         rubro: rubro,
         litros: litros,
-        fechaId: String(REPORT_YEAR)
+        fechaId: String(reportYear)
       });
     });
     return {
@@ -235,7 +273,7 @@
     const topTenLiters = model.ranking.slice(0, 10).reduce(function (sum, row) { return sum + row.litros; }, 0);
     const topTenShare = model.annualLiters ? topTenLiters / model.annualLiters * 100 : 0;
     byId("kpiGrid").innerHTML = [
-      kpiCard("Litros pedidos", numberFormat.format(model.annualLiters) + " L", "Total válido del período 2026", "Volumen anual", "default", false),
+      kpiCard("Litros pedidos", numberFormat.format(model.annualLiters) + " L", "Total válido del período " + reportYear, "Volumen anual", "default", false),
       kpiCard("Productos con pedidos", numberFormat.format(model.annualProducts), "Productos únicos con volumen válido", "Cobertura anual", "default", false),
       kpiCard("Producto líder", leader.producto, numberFormat.format(leader.litros) + " litros pedidos", "Posición 1", "positive", true),
       kpiCard("Concentración Top 10", decimalFormat.format(topTenShare) + "%", "Participación sobre el volumen anual", "Lectura 80/20", "default", false)
@@ -297,7 +335,7 @@
       ? "Las agregaciones se ejecutaron sobre el total autorizado y el cruce conserva las excepciones sin inventar relaciones."
       : "Las agregaciones servidoras y el cruce de productos no presentan excepciones en el Top 100.";
     const items = [
-      numberFormat.format(q.rowsWithProduct) + " pedidos 2026 con producto",
+      numberFormat.format(q.rowsWithProduct) + " pedidos " + reportYear + " con producto",
       numberFormat.format(q.aggregatedProducts) + " productos agregados",
       numberFormat.format(q.rankingGroups) + " posiciones recibidas",
       numberFormat.format(q.catalogGroups) + " grupos de catálogo",
@@ -313,7 +351,7 @@
     renderKpis();
     renderTable();
     renderTraceability();
-    byId("tableSummary").textContent = "Top " + model.ranking.length + " de " + numberFormat.format(model.annualProducts) + " productos con pedidos válidos en 2026.";
+    byId("tableSummary").textContent = "Top " + model.ranking.length + " de " + numberFormat.format(model.annualProducts) + " productos con pedidos válidos en " + reportYear + ".";
     byId("updatedAt").textContent = "Actualizado " + dateTimeFormat.format(new Date());
     byId("connectionStatus").textContent = "Información actualizada";
   }
@@ -330,6 +368,10 @@
     byId("connectionStatus").textContent = "Preparando información";
     byId("updatedAt").textContent = "Actualización pendiente";
     try {
+      const periodRows = await aggregateRows(CONTRACT.datasets.orders, periodsRequest());
+      reportYear = resolveReportYear(periodRows);
+      updatePeriodLabels();
+
       const results = await Promise.all([
         aggregateRows(CONTRACT.datasets.orders, summaryRequest()),
         aggregateRows(CONTRACT.datasets.orders, productsRequest(100)),
@@ -338,7 +380,7 @@
       ]);
       prepareModel(results[0], results[1], results[2], results[3]);
       if (!model.ranking.length) {
-        byId("connectionStatus").textContent = "Sin datos para 2026";
+        byId("connectionStatus").textContent = "Sin datos para " + reportYear;
         byId("updatedAt").textContent = "Consulta completada";
         showState("emptyState");
         return;

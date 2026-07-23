@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Top 100 de productos por litros pedidos durante 2026.">
+  <meta name="description" content="Top 100 de productos por litros pedidos del último período disponible.">
   <title>Top 100 productos más vendidos</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -18,7 +18,7 @@
       </div>
       <div class="period-badge" aria-label="Período del informe">
         <span>Período</span>
-        <strong>2026</strong>
+        <strong data-report-year>2026</strong>
       </div>
     </div>
   </header>
@@ -28,7 +28,7 @@
       <div>
         <p class="eyebrow">ANÁLISIS DE VOLUMEN PEDIDO</p>
         <h1 id="pageTitle">Top 100 productos más vendidos</h1>
-        <p class="hero-copy">Una lectura verificable de los productos con mayor volumen pedido durante 2026, medida en litros.</p>
+        <p class="hero-copy">Una lectura verificable de los productos con mayor volumen pedido durante <span data-report-year>2026</span>, medida en litros.</p>
       </div>
       <div class="connection-card" aria-live="polite">
         <span class="status-dot" aria-hidden="true"></span>
@@ -59,7 +59,7 @@
     <section id="emptyState" class="state-card hidden" aria-live="polite">
       <div class="state-icon state-icon-empty" aria-hidden="true">0</div>
       <div>
-        <strong>No hay pedidos para 2026</strong>
+        <strong>No hay pedidos para <span data-report-year>2026</span></strong>
         <p>La consulta respondió correctamente, pero no encontramos productos con litros pedidos válidos para el período.</p>
       </div>
     </section>
@@ -71,7 +71,7 @@
             <p class="section-kicker">RESUMEN DEL PERÍODO</p>
             <h2 id="summaryTitle">Indicadores clave</h2>
           </div>
-          <p class="section-note">Cálculos sobre todos los pedidos válidos de 2026.</p>
+          <p class="section-note">Cálculos sobre todos los pedidos válidos de <span data-report-year>2026</span>.</p>
         </div>
         <div id="kpiGrid" class="kpi-grid" data-widget="kpi-cards"></div>
       </section>
